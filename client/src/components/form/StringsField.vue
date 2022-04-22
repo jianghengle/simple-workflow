@@ -1,0 +1,124 @@
+<template>
+  <div class="mt-4">
+    <div class="field">
+      <label class="label">{{label}}</label>
+      <div v-if="localValue">
+        <div class="control mb-1" v-for="(g, i) in localValue" :key="'strings-field-element-' + i">
+          <span class="tag is-medium">
+            <span>{{g}}</span>
+            <button v-if="!readonly" class="delete ml-3" @click="removeElement(i)"></button>
+          </span>
+        </div>
+      </div>
+      <div v-if="!readonly" class="field has-addons">
+        <div class="control" v-if="!options">
+          <input class="input" type="text" :placeholder="placeholder" v-model="newElement">
+        </div>
+        <div class="control" v-if="options && !options.allowNew">
+          <div class="select" >
+            <select v-model="newElement">
+              <option  v-for="(opt, i) in options" :key="'strings-field-option-' + i" >
+                {{opt}}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="control" v-if="options && options.allowNew">
+          <div class="select">
+            <select v-model="selectedElement">
+              <option  v-for="(opt, i) in allOptions" :key="'strings-field-all-option-' + i" :value="opt.value">
+                {{opt.label}}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="control" v-if="selectedElement == '__NEW__'">
+          <input class="input" type="text" :placeholder="placeholder" v-model="newElement">
+        </div>
+        <div class="control">
+          <a class="button" @click="addElement">
+            <span class="icon is-small">
+              <i class="fas fa-plus"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'strings-field',
+  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'options'],
+  data () {
+    return {
+      localValue: null,
+      newElement: '',
+      selectedElement: null,
+    }
+  },
+  computed: {
+    allOptions () {
+      var options = []
+      if (this.options.values) {
+        options = this.options.values.map(function(opt) {
+          return {label: opt, value: opt}
+        })
+      }
+      if (this.options.allowNew) {
+        options.push({label: 'New Option', value: '__NEW__'})
+      }
+      return options
+    },
+  },
+  watch: {
+    value: function (val) {
+      this.setLocalValue()
+    },
+    localValue: function (val) {
+      if (!this.readonly) {
+        this.$emit('value-changed', [this.name, this.localValue])
+      }
+    },
+  },
+  methods: {
+    setLocalValue () {
+      var localValue = null
+      if (this.prefix) {
+        if (this.value && this.value.startsWith(this.prefix)) {
+          localValue = this.value.slice(this.prefix.length)
+        } else {
+          localValue = this.value
+        }
+      } else {
+        localValue = this.value
+      }
+      if (localValue != this.localValue) {
+        this.localValue = localValue
+      }
+    },
+    removeElement(index) {
+      this.localValue.splice(index, 1)
+    },
+    addElement () {
+      this.newElement = this.newElement.trim()
+      var newElement = this.newElement
+      if (this.selectedElement && this.selectedElement != '__NEW__') {
+        newElement = this.selectedElement
+      }
+      if (!newElement) {
+        return
+      }
+      if (!this.localValue) {
+        this.localValue = []
+      }
+      this.localValue.push(newElement)
+      this.newElement = ''
+    },
+  },
+  mounted () {
+    this.setLocalValue()
+  },
+}
+</script>

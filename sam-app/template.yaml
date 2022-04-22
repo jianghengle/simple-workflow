@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-app
+
+  Sample SAM Template for sam-app
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 60
+
+Resources:
+  MyUsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "MyUsers"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - 
+          AttributeName: "email"
+          AttributeType: "S"
+        - 
+          AttributeName: "token"
+          AttributeType: "S"
+      KeySchema:
+        - 
+          AttributeName: "email"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes: 
+        - 
+          IndexName: "tokenGSI"
+          KeySchema:
+            - 
+              AttributeName: "token"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+
+  OrgsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Orgs"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - 
+          AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - 
+          AttributeName: "id"
+          KeyType: "HASH"
+
+  MyAppFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [lambda.amazonaws.com]
+        Version: '2012-10-17'
+      Policies:
+      - PolicyDocument: 
+          Statement:
+          - Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource: "*"
+          - Action: [
+              "dynamodb:GetItem",
+              "dynamodb:PutItem",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:UpdateItem",
+              "dynamodb:BatchExecuteStatement",
+              "dynamodb:BatchWriteItem"
+            ]
+            Effect: Allow
+            Resource:
+              - !GetAtt MyUsersTable.Arn
+              - !Join [ '/',[!GetAtt MyUsersTable.Arn, index/*]]
+              - !GetAtt OrgsTable.Arn
+          - Action:
+              - ses:SendEmail
+              - ses:SendRawEmail
+            Effect: Allow
+            Resource: "*"
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Resource: "*"
+          Version: '2012-10-17'
+        PolicyName: 'MyAppFunctionRolePolicy'
+
+  MyAppFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/
+      Handler: app.lambda_handler.handle
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        getProxy:
+          Type: Api
+          Properties:
+            Path: '/{proxy+}'
+            Method: get
+        postProxy:
+          Type: Api
+          Properties:
+            Path: '/{proxy+}'
+            Method: post
+        optionsProxy:
+          Type: Api
+          Properties:
+            Path: '/{proxy+}'
+            Method: options
+      Role:
+        !GetAtt MyAppFunctionRole.Arn
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  MyAppApi:
+    Description: "API Gateway endpoint URL for Prod stage for My App function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/ping"
+  MyAppFunction:
+    Description: "My App Lambda Function ARN"
+    Value: !GetAtt MyAppFunction.Arn
+  MyAppFunctionIamRole:
+    Description: "Implicit IAM Role created for My App function"
+    Value: !GetAtt MyAppFunctionRole.Arn

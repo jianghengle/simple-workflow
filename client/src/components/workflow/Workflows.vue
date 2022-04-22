@@ -1,0 +1,286 @@
+<template>
+  <div>
+    <div v-if="waiting">
+      <span class="icon is-medium is-size-4">
+        <i class="fas fa-spinner fa-pulse"></i>
+      </span>
+    </div>
+    <div v-else>
+      <div v-if="error" class="notification is-danger is-light">
+        <button class="delete" @click="error=''"></button>
+        {{error}}
+      </div>
+
+      <nav class="breadcrumb" aria-label="breadcrumbs">
+        <ul>
+          <li class="is-active"><a href="#" aria-current="page">{{orgWorkflowConfig.name}}</a></li>
+        </ul>
+      </nav>
+
+      <div>  
+        <div class="buttons is-pulled-right">
+          <router-link :to="'/org/' + orgId + '/new-workflow/' + this.configId + '/' + this.folderId + '/new'" class="button">
+            <span class="icon">
+              <i class="fas fa-plus"></i>
+            </span>
+            <span>New Workflow</span>
+          </router-link>
+        </div>
+        <h1 class="title is-4">{{orgWorkflowConfig.name}}</h1>
+        <h2 class="subtitle is-6">&nbsp;</h2>
+      </div>
+  
+      <div v-if="workflows">
+        
+        <div class="columns mt-4">
+          <div class="column field mb-0 pb-0">
+            <p class="control has-icons-left">
+              <span class="select">
+                <select v-model="filter">
+                  <option :value="'CurrentFolder'">Current Folder</option>
+                </select>
+              </span>
+              <span class="icon is-small is-left">
+                <i class="fas fa-filter"></i>
+              </span>
+            </p>
+          </div>
+          <div class="column field  mb-0 pb-0">
+            <p class="control has-icons-left">
+              <input class="input" type="text" placeholder="Search" v-model="search">
+              <span class="icon is-small is-left">
+                <i class="fas fa-search"></i>
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div v-if="workflows.length">
+          <table class="table is-fullwidth is-hoverable is-striped">
+            <thead>
+              <tr>
+                <th>
+                  <input type="checkbox">
+                </th>
+                <th class="is-clickable" @click="changeSortOption('id')">
+                  <span>Id</span>
+                  <span class="icon" v-if="sortOption.field == 'id'">
+                    <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
+                  </span>
+                </th>
+                <th class="is-clickable" @click="changeSortOption('state')">
+                  <span>State</span>
+                  <span class="icon" v-if="sortOption.field == 'state'">
+                    <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
+                  </span>
+                </th>
+                <th v-for="(f, i) in dashboardFields" :key="'wfth' + i" class="is-clickable" @click="changeSortOption(f.name)">
+                  <span>{{f.label}}</span>
+                  <span class="icon" v-if="sortOption.field == f.name">
+                    <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
+                  </span>
+                </th>
+                <th class="is-clickable" @click="changeSortOption('createdBy')">
+                  <span>Created By</span>
+                  <span class="icon" v-if="sortOption.field == 'createdBy'">
+                    <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
+                  </span>
+                </th>
+                <th class="is-clickable" @click="changeSortOption('createdAt')">
+                  <span>Created At</span>
+                  <span class="icon" v-if="sortOption.field == 'createdAt'">
+                    <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
+                  </span>
+                </th>
+                <th class="is-clickable" @click="changeSortOption('updatedAt')">
+                  <span>Updated At</span>
+                  <span class="icon" v-if="sortOption.field == 'updatedAt'">
+                    <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="is-clickable" v-for="(w, i) in showingWorkflows" :key="'wftbr-' + i" @click="viewWorkflow(w)">
+                <td><input type="checkbox"></td>
+                <td class="workflow-id">{{w.id}}</td>
+                <td>{{w.state}}</td>
+                <td v-for="(f, j) in dashboardFields" :key="'wftb-r-' + i + '-c-' + j">
+                  {{w[f.name]}}
+                </td>
+                <td class="workflow-id">{{w.createdBy}}</td>
+                <td>{{w.createdAtLabel}}</td>
+                <td>{{w.updatedAtLabel}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else>
+          <article class="message is-info">
+            <div class="message-body">
+              No workflow found.
+            </div>
+          </article>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import dateFormat from 'dateformat'
+
+export default {
+  name: 'Workflows',
+  data () {
+    return {
+      error: '',
+      waiting: false,
+      folder: null,
+      workflows: null,
+      filter: 'CurrentFolder',
+      search: '',
+      sortOption: {
+        field: 'createdAt',
+        asc: true
+      }
+    }
+  },
+  computed: {
+    server () {
+      return this.$store.state.config.server
+    },
+    email () {
+      return this.$store.state.user.email
+    },
+    orgId () {
+      return this.$route.params.orgId
+    },
+    configId () {
+      return this.$route.params.configId
+    },
+    folderId () {
+      return this.$route.params.folderId
+    },
+    org () {
+      return this.$store.state.org.org
+    },
+    orgUsers () {
+      return this.$store.state.org.orgUsers
+    },
+    orgUser () {
+      if (!this.email || !this.orgUsers) {
+        return null
+      }
+      var email = this.email
+      return this.orgUsers.filter(function(u){
+        return u.email == email
+      })[0]
+    },
+    isAdmin () {
+      if (!this.orgUser) {
+        return false
+      }
+      return this.orgUser.role == 'Owner' || this.orgUser.role == 'Admin'
+    },
+    orgWorkflowConfigs () {
+      return this.$store.state.org.orgWorkflowConfigs
+    },
+    orgWorkflowConfig () {
+      if (!this.orgWorkflowConfigs) {
+        return null
+      }
+      for(const workflowConfig of this.orgWorkflowConfigs) {
+        if (workflowConfig.id == this.configId) {
+          return workflowConfig
+        }
+      }
+      return null
+    },
+    dashboardFields () {
+      if (!this.orgWorkflowConfig) {
+        return []
+      }
+      return this.orgWorkflowConfig.fields.filter(f => f.dashboard)
+    },
+    parentFolders () {
+      return []
+    },
+    showingWorkflows () {
+      var search = this.search.trim().toLowerCase()
+      var filteredWorkflows = this.workflows.filter(w => {
+        for(const f of this.dashboardFields) {
+          var val = w[f.name] ? w[f.name].toString().toLowerCase() : ''
+          if (val.includes(this.search)) {
+            return true
+          }
+        }
+        return w.id.includes(search)
+          || w.state.toLowerCase().includes(search)
+          || w.createdBy.toLowerCase().includes(search)
+      })
+      var sort = this.sortOption
+      var sortedWorkflows = filteredWorkflows.sort((a, b) => {
+        var va = a[sort.field]
+        var vb = b[sort.field]
+        if (sort.field == 'createdAt') {
+          return sort.asc ? va - vb : vb - va
+        }
+        va = va ? va.toString() : ''
+        vb = vb ? vb.toString() : ''
+        return sort.asc ? va.localeCompare(vb) : vb.localeCompare(va)
+      })
+      return sortedWorkflows.map(w => {
+        if (w.createdAt) {
+          w.createdAtLabel = dateFormat(new Date(w.createdAt), 'mm/dd/yyyy')
+        }
+        if (w.updatedAt) {
+          w.updatedAtLabel = dateFormat(new Date(w.updatedAt), 'mm/dd/yyyy')
+        }
+        return w
+      })
+    },
+  },
+  watch: {
+    folderId: function (val) {
+      this.getWorkflowsInFolder()
+    },
+  },
+  methods: {
+    getWorkflowsInFolder () {
+      this.waiting = true
+      this.$http.get(this.server + '/org/get-org-workflows-in-folder/' + this.folderId).then(resp => {
+        this.workflows = resp.body
+        this.waiting = false
+      }, err => {
+        console.log('Failed to get workflows')
+        this.waiting = false
+      })
+    },
+    viewWorkflow (w) {
+      this.$router.push('/org/' + this.orgId + '/workflow/' + this.configId + '/' + w.id)
+    },
+    changeSortOption (name) {
+      if (this.sortOption.field == name) {
+        this.sortOption.asc = !this.sortOption.asc
+      } else {
+        this.sortOption.field = name
+        this.sortOption.asc = true
+      }
+    }
+  },
+  mounted () {
+    this.getWorkflowsInFolder()
+  },
+}
+</script>
+
+<style scoped lang="scss">
+.workflow-id {
+  max-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
