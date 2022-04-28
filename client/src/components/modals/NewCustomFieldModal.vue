@@ -8,7 +8,7 @@
         <button class="delete" @click="close"></button>
       </header>
       <section class="modal-card-body">
-        {{insertOptions}}
+
         <string-field v-if="insertOptions.length" :label="'Insert After'" :value="insertAfter" :options="insertOptions" @value-changed="onInsertAfterChanged" />
 
         <string-field :name="'name'" :label="'Name'" :value="model.name" @value-changed="onValueChanged" />

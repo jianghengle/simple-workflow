@@ -89,8 +89,11 @@ export default {
     model: function (val) {
       this.setLocalModel()
     },
-    localModel: function (val) {
-      this.$emit('model-changed', ['fields', this.localModel])
+    localModel: {
+      handler (val) {
+        this.$emit('model-changed', ['fields', this.localModel])
+      },
+      deep: true
     },
   },
   methods: {
@@ -109,7 +112,6 @@ export default {
           value: i
         })
       }
-      console.log(options)
       this.newCustomFieldModal.insertOptions = options
       this.newCustomFieldModal.opened = true
     },

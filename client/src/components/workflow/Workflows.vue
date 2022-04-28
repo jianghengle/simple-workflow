@@ -251,7 +251,7 @@ export default {
     getWorkflowsInFolder () {
       this.waiting = true
       this.$http.get(this.server + '/org/get-org-workflows-in-folder/' + this.folderId).then(resp => {
-        this.workflows = resp.body
+        this.workflows = resp.body.filter(this.canViewWorkflow)
         this.waiting = false
       }, err => {
         console.log('Failed to get workflows')
@@ -268,7 +268,54 @@ export default {
         this.sortOption.field = name
         this.sortOption.asc = true
       }
-    }
+    },
+    canViewWorkflow (w) {
+      var stateConfig = this.orgWorkflowConfig.states.filter(sc => sc.name == w.state)[0]
+      if (!stateConfig) {
+        return false
+      }
+      var permission = stateConfig.permissions.view
+      if (!permission || !this.orgUser) {
+        return false
+      }
+      return this.userHasPermission(w, permission)
+    },
+    userHasPermission (workflow, permission) {
+      var allowedGroups = permission.groups
+      for (const g of allowedGroups) {
+        if (this.orgUser.groups.includes(g)) {
+          return true
+        }
+      }
+      var others = permission.others
+      for (const o of others) {
+        if (o == 'Workflow Creator') {
+          if (workflow.createdBy == this.email) {
+            return true
+          }
+        } else {
+          var field = null
+          for (const f of this.orgWorkflowConfig.fields) {
+            if (f.name == o) {
+              field = f
+            }
+          }
+          if (field) {
+            if (field.type == 'string') {
+              if (this.email == workflow[field.name]) {
+                return true
+              }
+            }
+            if (field.type == 'strings') {
+              if (workflow[field.name].includes(this.email)) {
+                return true
+              }
+            }
+          }
+        }
+        return false
+      }
+    },
   },
   mounted () {
     this.getWorkflowsInFolder()

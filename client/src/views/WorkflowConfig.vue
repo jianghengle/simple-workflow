@@ -190,7 +190,7 @@ export default {
       this.deleting = true
       this.$http.post(this.server + '/org/delete-workflow-config/' + this.configId).then(resp => {
         this.$store.commit('org/removeOrgWorkflowConfig', resp.body)
-        this.$router.push('/org/' + this.orgId + '/workflows')
+        this.$router.push('/org/' + this.orgId + '/workflow-configs')
         this.deleting = false
       }, err => {
         this.error = err

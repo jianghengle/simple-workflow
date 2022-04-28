@@ -3,7 +3,7 @@
     <div class="field">
       <label class="label">{{label}}</label>
       <div class="control">
-        <textarea class="textarea" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly"></textarea>
+        <textarea class="textarea" :placeholder="placeholder" v-model="localValue" :readonly="readonly"></textarea>
       </div>
     </div>
   </div>
@@ -24,14 +24,12 @@ export default {
     },
     localValue: function (val) {
       if (!this.readonly) {
-        console.log('emit', val)
         this.$emit('value-changed', [this.name, this.localValue])
       }
     },
   },
   methods: {
     setLocalValue () {
-      console.log('setLocalValue')
       var localValue = this.value   
       if (localValue != this.localValue) {
         this.localValue = localValue

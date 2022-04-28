@@ -15,7 +15,7 @@
         <tr>
           <th>To State</th>
           <th>Action Label</th>
-          <th>Permission</th>
+          <th>Actor</th>
         </tr>
       </thead>
       <tbody>
@@ -25,10 +25,10 @@
             {{t.actionLabel}}
           </td>
           <td>
-            <div v-for="(g, i) in t.permission.groups" :key="stateName + '-t-t-p-g-' + i">
+            <div v-for="(g, i) in t.actor.groups" :key="stateName + '-t-t-p-g-' + i">
               <span class="tag" >{{g}}</span>&nbsp;
             </div>
-            <div v-for="(g, i) in t.permission.others" :key="stateName + '-t-t-p-o-' + i">
+            <div v-for="(g, i) in t.actor.others" :key="stateName + '-t-t-p-o-' + i">
               <span class="tag" >{{g}}</span>&nbsp;
             </div>
           </td>
@@ -75,9 +75,12 @@ export default {
         this.setLocalModel()
       }
     },
-    localModel: function (val) {
-      this.$emit('model-changed', ['transitions', this.localModel])
-    },
+    localModel: {
+      handler (val) {
+        this.$emit('model-changed', ['transitions', this.localModel])
+      },
+      deep: true,
+    }
   },
   methods: {
     setLocalModel () {
@@ -96,7 +99,7 @@ export default {
       this.newTransitionModal.opened = false
     },
     onNewTransitionModalSaved (val) {
-      this.localModel.push(val)
+      this.localModel.push(JSON.parse(JSON.stringify(val)))
       this.newTransitionModal.opened = false
     },
     openTransitionModal (index) {

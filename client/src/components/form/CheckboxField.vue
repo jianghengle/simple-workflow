@@ -18,7 +18,7 @@ export default {
   props: ['name', 'label', 'value', 'inlineLabel', 'readonly'],
   data () {
     return {
-      localValue: false,
+      localValue: null,
     }
   },
   watch: {
@@ -33,12 +33,10 @@ export default {
   },
   methods: {
     setLocalValue () {
-      var localValue = this.value   
-      if (localValue != this.localValue) {
-        this.localValue = localValue
+      if (this.localValue != this.value) {
+        this.localValue = this.value
       }
     },
-    
   },
   mounted () {
     this.setLocalValue()

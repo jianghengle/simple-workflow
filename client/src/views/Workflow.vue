@@ -35,65 +35,75 @@
             </div>
             <div v-else>
               <div v-if="model">
-
-                <nav class="level">
-                  <div class="level-item has-text-centered">
-                    <div>
-                      <p class="heading">State</p>
-                      <span class="tag is-link is-medium has-text-weight-bold">{{model.state}}</span>
-                    </div>
-                  </div>
-                  <div class="level-item has-text-centered">
-                    <div>
-                      <p class="heading">Created By</p>
-                      <p class="title is-6">{{model.createdBy}}</p>
-                    </div>
-                  </div>
-                  <div class="level-item has-text-centered">
-                    <div>
-                      <p class="heading">Created At</p>
-                      <p class="title is-6">{{createdAtLabel}}</p>
-                    </div>
-                  </div>
-                  <div class="level-item has-text-centered">
-                    <div>
-                      <p class="heading">Updated At</p>
-                      <p class="title is-6">{{updatedAtLabel}}</p>
-                    </div>
-                  </div>
-                </nav>
-
-                <workflow-model :model="model" :readonly="!canSave" @model-updated="onModelUpdated" />
-
-                <div class="field is-grouped">
-                  <div class="control" v-if="canSave">
-                    <button class="button is-link" :disabled="!modelDiff" :class="{'is-loading': updating}" @click="updateWorkflow">Save</button>
-                  </div>
-                  <div class="control" v-if="canDelete">
-                    <button class="button is-danger" :class="{'is-loading': deleting}" @click="deleteWorkflow">Delete</button>
+                <div v-if="!canView">
+                  <div class="message-body">
+                    You are not allowed to view this workflow.
                   </div>
                 </div>
+                <div v-else>
+                  <nav class="level">
+                    <div class="level-item has-text-centered">
+                      <div>
+                        <p class="heading">State</p>
+                        <span class="tag is-link is-medium has-text-weight-bold">{{model.state}}</span>
+                      </div>
+                    </div>
+                    <div class="level-item has-text-centered">
+                      <div>
+                        <p class="heading">Created By</p>
+                        <p class="title is-6">{{model.createdBy}}</p>
+                      </div>
+                    </div>
+                    <div class="level-item has-text-centered">
+                      <div>
+                        <p class="heading">Created At</p>
+                        <p class="title is-6">{{createdAtLabel}}</p>
+                      </div>
+                    </div>
+                    <div class="level-item has-text-centered">
+                      <div>
+                        <p class="heading">Updated At</p>
+                        <p class="title is-6">{{updatedAtLabel}}</p>
+                      </div>
+                    </div>
+                  </nav>
 
-                <hr />
+                  <workflow-model :model="model" :readonly="!canSave" @model-updated="onModelUpdated" />
 
-                <div class="field is-grouped">
-                  <div class="control" v-for="(t, i) in availableTransitions" :key="'at-' + i">
-                    <button class="button is-dark" :class="{'is-loading': transiting}" @click="transiteWorkflow(t)">{{t.actionLabel}}</button>
+                  <div class="field is-grouped">
+                    <div class="control" v-if="canSave">
+                      <button class="button is-link" :class="{'is-loading': updating}" @click="updateWorkflow">Save</button>
+                    </div>
+                    <div class="control" v-if="canDelete">
+                      <button class="button is-danger" :class="{'is-loading': deleting}" @click="deleteWorkflow">Delete</button>
+                    </div>
                   </div>
-                  <div class="control">
-                    <button class="button" @click="sendEmail">Send Email</button>
+
+                  <hr />
+
+                  <div class="field is-grouped">
+                    <div class="control" v-for="(t, i) in availableTransitions" :key="'at-' + i">
+                      <button class="button is-dark" :class="{'is-loading': transiting}" @click="transiteWorkflow(t)">{{t.actionLabel}}</button>
+                    </div>
+                    <div class="control">
+                      <button class="button" @click="sendEmail">Send Email</button>
+                    </div>
+                    <div class="control" v-if="folderId">
+                      <router-link class="button" :to="'/org/' + orgId + '/new-workflow/' + configId + '/' + folderId + '/' + workflowId">Copy to New</router-link>
+                    </div>
                   </div>
-                  <div class="control" v-if="folderId">
-                    <router-link class="button" :to="'/org/' + orgId + '/new-workflow/' + configId + '/' + folderId + '/' + workflowId">Copy to New</router-link>
+
+                  <div v-if="modelDiff" class="notification is-warning is-light">
+                    You have unsaved changes!
                   </div>
+
+                  <div v-if="error" class="notification is-danger is-light">
+                    <button class="delete" @click="error=''"></button>
+                    {{error}}
+                  </div>
+
+                  <send-email-modal :opened="sendEmailModal.opened" :workflow="model" @send-email-modal-closed="onSendEmailModalClosed" />
                 </div>
-
-                <div v-if="error" class="notification is-danger is-light">
-                  <button class="delete" @click="error=''"></button>
-                  {{error}}
-                </div>
-
-                <send-email-modal :opened="sendEmailModal.opened" :workflow="model" @send-email-modal-closed="onSendEmailModalClosed" />
               </div>
             </div>
           </div>
@@ -210,6 +220,15 @@ export default {
       }
       return false
     },
+    canView () {
+      if (!this.canAccess) {
+        return false
+      }
+      if (!this.stateConfig) {
+        return false
+      }
+      return this.userHasPermission(this.stateConfig.permissions.view)
+    },
     canSave () {
       if (!this.canAccess) {
         return false
@@ -260,7 +279,7 @@ export default {
       }
       var transitions = []
       for (const t of this.stateConfig.transitions) {
-        if (this.userHasPermission(t.permission)) {
+        if (this.userHasPermission(t.actor)) {
           transitions.push(t)
         }
       }
@@ -294,7 +313,7 @@ export default {
       this.newModel = val
     },
     updateWorkflow () {
-      if (this.updating || !this.modelDiff) {
+      if (this.updating) {
         return
       }
 

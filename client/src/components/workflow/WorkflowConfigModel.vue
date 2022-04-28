@@ -28,7 +28,7 @@ import CustomFields from '@/components/workflow/CustomFields'
 import CustomStates from '@/components/workflow/CustomStates'
 
 export default {
-  name: 'WorkflowConfigModel',
+  name: 'workflow-config-model',
   components: {
     StringField,
     TextareaField,
@@ -69,8 +69,11 @@ export default {
     model: function (val) {
       this.setLocalModel()
     },
-    localModel: function (val) {
-      this.$emit('model-updated', this.localModel)
+    localModel: {
+      handler (newValue, oldValue) {
+        this.$emit('model-updated', this.localModel)
+      },
+      deep: true,
     },
   },
   methods: {

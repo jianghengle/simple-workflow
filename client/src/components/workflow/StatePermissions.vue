@@ -13,6 +13,19 @@
         </tr>
       </thead>
       <tbody>
+        <tr class="is-clickable" @click="openPemrissionModal('view')">
+          <td>View</td>
+          <td>
+            <div v-for="(g, i) in localModel.view.groups" :key="stateName + '-p-t-v-g-' + i">
+              <span class="tag" >{{g}}</span>
+            </div>
+          </td>
+          <td>
+            <div v-for="(o, i) in localModel.view.others" :key="stateName + '-p-t-v-o-' + i">
+              <span class="tag" >{{o}}</span>
+            </div>
+          </td>
+        </tr>
         <tr class="is-clickable" @click="openPemrissionModal('save')">
           <td>Save</td>
           <td>
@@ -61,6 +74,7 @@ export default {
   data () {
     return {
       localModel: null,
+      actions: ['view', 'save', 'delete'],
       permissionModal: {
         opened: false,
         model: null,
@@ -74,9 +88,12 @@ export default {
         this.setLocalModel()
       }
     },
-    localModel: function (val) {
-      this.$emit('model-changed', ['permissions', this.localModel])
-    },
+    localModel: {
+      handler (val) {
+        this.$emit('model-changed', ['permissions', this.localModel])
+      },
+      deep: true,
+    }, 
   },
   methods: {
     setLocalModel () {
@@ -84,7 +101,16 @@ export default {
         var modelJson = JSON.stringify(this.model)
         var localModelJson = JSON.stringify(this.localModel)
         if (modelJson != localModelJson) {
-          this.localModel = JSON.parse(modelJson)
+          var localModel = JSON.parse(modelJson)
+          for (const a of this.actions) {
+            if (!localModel[a]) {
+              localModel[a] = {
+                groups: ['All'],
+                others: []
+              }
+            }
+          }
+          this.localModel = localModel
         }
       }
     },

@@ -30,16 +30,18 @@ export default {
         this.setLocalModel()
       }
     },
-    localModel: function (val) {
-      this.$emit('model-changed', [this.index, this.localModel])
+    localModel: {
+      handler (val) {
+        this.$emit('model-changed', [this.index, this.localModel])
+      },
+      deep: true,
     },
   },
   methods: {
     setLocalModel () {
       if (this.model) {
         var modelJson = JSON.stringify(this.model)
-        var localModelJson = JSON.stringify(this.localModel)
-        if (modelJson != localModelJson) {
+        if (JSON.stringify(this.localModel) != modelJson) {
           this.localModel = JSON.parse(modelJson)
         }
       }
@@ -47,8 +49,9 @@ export default {
     onValueChanged (val) {
       var name = val[0]
       var value = val[1]
-      if (this.model[name] != value) {
-        this.model[name] = value
+      var valueJson = JSON.stringify(value)
+      if (JSON.stringify(this.localModel[name]) != valueJson) {
+        this.localModel[name] = JSON.parse(valueJson)
       }
     },
   },

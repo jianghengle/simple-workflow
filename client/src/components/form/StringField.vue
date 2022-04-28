@@ -9,8 +9,9 @@
           </a>
         </p>
         <div class="control" v-if="!options" :class="{'is-expanded': prefix}">
-          <input class="input" type="text" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly">
+          <input class="input" :class="{'is-danger': brokenConstraint}" type="text" :placeholder="placeholder" v-model="localValue" :readonly="readonly">
         </div>
+        <p class="help is-danger" v-if="brokenConstraint">{{brokenConstraint.info}}</p>
         <div class="control" v-if="options">
           <div class="select">
             <select v-model="localValue" :disabled="readonly">
@@ -28,7 +29,7 @@
 <script>
 export default {
   name: 'string-field',
-  props: ['name', 'label', 'value', 'placeholder', 'prefix', 'readonly', 'options'],
+  props: ['name', 'label', 'value', 'placeholder', 'prefix', 'readonly', 'options', 'constraints'],
   data () {
     return {
       localValue: null,
@@ -45,16 +46,35 @@ export default {
       }
       return this.options.map(opt => ({value: opt, label: opt}))
     },
+    brokenConstraint () {
+      if (this.localValue == null) {
+        return null
+      }
+      if (!this.constraints) {
+        return null
+      }
+      for(const c of this.constraints) {
+        if (c.match && !c.match.test(this.localValue)) {
+          return c
+        }
+        if (c.notMatch && c.notMatch.test(this.localValue)) {
+          return c
+        }
+      }
+      return null
+    },
   },
   watch: {
     value: function (val) {
       this.setLocalValue()
     },
     localValue: function (val) {
-      if (!this.readonly) {
-        var value = this.prefix ? (this.prefix + this.localValue) : this.localValue
-        this.$emit('value-changed', [this.name, value])
-      }
+      this.$nextTick(function () {
+        if (!this.readonly && !this.brokenConstraint) {
+          var value = this.prefix ? (this.prefix + this.localValue) : this.localValue
+          this.$emit('value-changed', [this.name, value])
+        }
+      })
     },
   },
   methods: {

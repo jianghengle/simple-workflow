@@ -176,13 +176,17 @@ export default {
           {
             name: 'Created',
             permissions: {
+              view: {
+                groups: ['All'],
+                others: [],
+              },
               save: {
-                group: 'All',
-                actor: null,
+                groups: ['All'],
+                others: [],
               },
               delete: {
-                group: null,
-                actor: null,
+                groups: ['All'],
+                others: [],
               }
             },
             form: {},

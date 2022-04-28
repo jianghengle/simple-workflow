@@ -84,18 +84,9 @@ export default {
   },
   methods: {
     setLocalValue () {
-      var localValue = null
-      if (this.prefix) {
-        if (this.value && this.value.startsWith(this.prefix)) {
-          localValue = this.value.slice(this.prefix.length)
-        } else {
-          localValue = this.value
-        }
-      } else {
-        localValue = this.value
-      }
-      if (localValue != this.localValue) {
-        this.localValue = localValue
+      var localValueJson = JSON.stringify(this.value)
+      if (localValueJson != JSON.stringify(this.localValue)) {
+        this.localValue = JSON.parse(localValueJson)
       }
     },
     removeElement(index) {

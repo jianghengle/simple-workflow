@@ -30,10 +30,13 @@ export default {
     value: function (val) {
       this.setLocalValue()
     },
-    localValue: function (val) {
-      if (!this.readonly) {
-        this.$emit('value-changed', [this.name, this.localValue])
-      }
+    localValue: {
+      handler (val) {
+        if (!this.readonly) {
+          this.$emit('value-changed', [this.name, this.localValue])
+        }
+      },
+      deep: true
     },
   },
   methods: {

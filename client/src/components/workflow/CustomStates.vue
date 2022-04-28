@@ -21,7 +21,8 @@
       </ul>
     </div>
 
-    <custom-state :model="currentState" :index="currentStateIndex" :fields="fields" :stateNames="stateNames" :model-changed="onStateChanged" />
+
+    <custom-state :model="currentState" :index="currentStateIndex" :fields="fields" :stateNames="stateNames" @model-changed="onStateChanged" />
 
   </div>
 </template>
@@ -58,8 +59,11 @@ export default {
     model: function (val) {
       this.setLocalModel()
     },
-    localModel: function (val) {
-      this.$emit('model-changed', ['states', this.localModel])
+    localModel: {
+      handler (val) {
+        this.$emit('model-changed', ['states', this.localModel])
+      },
+      deep: true,
     },
   },
   methods: {
@@ -74,6 +78,10 @@ export default {
       this.localModel.push({
         name: 'New',
         permissions: {
+          view: {
+            groups: ['All'],
+            others: []
+          },
           save: {
             groups: ['All'],
             others: []
@@ -88,7 +96,7 @@ export default {
       this.currentStateIndex = this.localModel.length - 1
     },
     onStateChanged (val) {
-      this.localModel.splice(val[0], 1, JSON.parse(JSON.stringify(val[1])))
+      this.localModel.splice(val[0], 1, val[1])
     },
     removeState (index) {
       var confirm = {

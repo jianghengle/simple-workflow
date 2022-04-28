@@ -11,8 +11,8 @@
         <string-field :label="'From State'" :value="stateName" :readonly="true" :options="stateNames" />
         <string-field :name="'toState'" :label="'To State'" :value="localModel.toState" @value-changed="onValueChanged" :options="toStateOptions" />
         <string-field :name="'actionLabel'" :label="'Action Label'" :value="localModel.actionLabel" @value-changed="onValueChanged" />
-        <strings-field :name="'groups'" :label="'Permission Groups'" :value="localModel.permission.groups" @value-changed="onPermissionValueChanged" :options="groupOptions" />
-        <strings-field :name="'others'" :label="'Permission Others'" :value="localModel.permission.others" @value-changed="onPermissionValueChanged" :options="otherOptions" />
+        <strings-field :name="'groups'" :label="'Actor Groups'" :value="localModel.actor.groups" @value-changed="onPermissionValueChanged" :options="groupOptions" />
+        <strings-field :name="'others'" :label="'Actor Others'" :value="localModel.actor.others" @value-changed="onPermissionValueChanged" :options="otherOptions" />
       </section>
       <footer class="modal-card-foot">
         <a class="button is-link" :disabled="!canSave" @click="save">Save</a>
@@ -38,7 +38,7 @@ export default {
       localModel: {
         toState: '',
         actionLabel: '',
-        permission: {
+        actor: {
            groups: [],
            others: [],
         },
@@ -98,8 +98,8 @@ export default {
     onPermissionValueChanged (val) {
       var name = val[0]
       var value = val[1]
-      if (this.localModel.permission[name] != value) {
-        this.localModel.permission[name] = value
+      if (this.localModel.actor[name] != value) {
+        this.localModel.actor[name] = value
       }
     },
   },
