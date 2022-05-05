@@ -132,6 +132,7 @@ export default {
           if (this.rememberMe) {
             localStorage.setItem('token', user.token)
             localStorage.setItem('email', user.email)
+            localStorage.setItem('username', user.username)
           }
           this.email = ''
           this.password = ''

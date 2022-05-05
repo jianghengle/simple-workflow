@@ -34,7 +34,7 @@ export default {
   methods: {
     setLocalValue () {
       if (this.localValue != this.value) {
-        this.localValue = this.value
+        this.localValue = Boolean(this.value)
       }
     },
   },

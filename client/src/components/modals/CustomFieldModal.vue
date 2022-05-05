@@ -41,6 +41,13 @@
           </div>
         </div>
 
+        <div class="field mt-4" v-if="model.type == 'sheet'">
+          <label class="label">Columns</label>
+          <div class="my-columns">
+            <strings-field :value="model.columns" @value-changed="onColumnsValueChanged" />
+          </div>
+        </div>
+
         <checkbox-field :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
 
       </section>
@@ -73,9 +80,10 @@ export default {
         label: '',
         type: 'string',
         options: null,
+        columns: [],
         dashboard: true,
       },
-      typeOptions: ['string', 'strings', 'textarea', 'number', 'checkbox', 'file', 'files'],
+      typeOptions: ['string', 'strings', 'textarea', 'number', 'checkbox', 'file', 'files', 'sheet'],
       optionsMode: 'NoOptions',
       fixedOptions: [],
       orgUsersOptions: 'All',
@@ -131,6 +139,7 @@ export default {
           this.orgUsersOptions ='All'
         }
         this.model.dashboard = this.field.dashboard
+        this.model.columns = this.field.columns
       }
     },
   },
@@ -185,6 +194,9 @@ export default {
     },
     deleteFieldConfirmed () {
       this.$emit('custom-field-modal-deleted', this.index)
+    },
+    onColumnsValueChanged (val) {
+      this.model.columns = val[1]
     },
   },
 }

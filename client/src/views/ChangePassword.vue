@@ -16,6 +16,15 @@
             </span>
          </div>
       </div>
+      <div class="field" v-if="mode == 'new'">
+         <label class="label">Username</label>
+         <div class="control has-icons-left has-icons-right">
+            <input class="input" type="email" placeholder="Username" v-model="username">
+            <span class="icon is-small is-left">
+               <i class="fas fa-user"></i>
+            </span>
+         </div>
+      </div>
       <div class="field">
         <label class="label">Password</label>
         <div class="control has-icons-left has-icons-right">
@@ -64,6 +73,7 @@ export default {
       error: '',
       waiting: false,
       changing: false,
+      username: '',
     }
   },
   computed: {
@@ -75,6 +85,9 @@ export default {
     },
     key () {
       return this.$route.params.key
+    },
+    mode () {
+      return this.$route.params.mode
     },
     canChange () {
       return this.password && this.password == this.passwordAgain
@@ -89,6 +102,9 @@ export default {
       this.error = ''
       this.success = false
       var message = {email: this.email, password: this.password, token: this.key}
+      if (this.mode == 'new') {
+        message.username = this.username
+      }
       this.$http.post(this.server + '/user/reset-password', message).then(resp => {
         this.success = true
         this.changing = false

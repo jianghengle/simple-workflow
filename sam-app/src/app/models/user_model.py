@@ -10,7 +10,12 @@ from .. import MyError
 class UserModel(Model):
     TableName = 'MyUsers'
     TokenGSI = ('tokenGSI', 'token')
-    Fields = ['email', 'encryptedPassword', 'token', 'orgIds', 'resetPasswordToken', 'updatedAt']
+    Fields = ['email', 'username', 'encryptedPassword', 'token', 'orgIds', 'resetPasswordToken', 'updatedAt']
+
+    def update_username(self, username):
+        table = dynamo_service.get_table(UserModel.TableName)
+        dynamo_service.update_item(table, 'email', self.email, {'username': username})
+        return UserModel(dynamo_service.get_item(table, 'email', self.email))
 
     def add_org_id(self, org_id):
         table = dynamo_service.get_table(UserModel.TableName)

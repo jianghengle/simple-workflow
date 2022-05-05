@@ -9,7 +9,7 @@
           </a>
         </p>
         <div class="control" v-if="!options" :class="{'is-expanded': prefix}">
-          <input class="input" :class="{'is-danger': brokenConstraint}" type="text" :placeholder="placeholder" v-model="localValue" :readonly="readonly">
+          <input class="input" :class="{'is-danger': brokenConstraint}" type="text" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly">
         </div>
         <p class="help is-danger" v-if="brokenConstraint">{{brokenConstraint.info}}</p>
         <div class="control" v-if="options">
@@ -80,14 +80,15 @@ export default {
   methods: {
     setLocalValue () {
       var localValue = null
+      var value = String(this.value)
       if (this.prefix) {
-        if (this.value && this.value.startsWith(this.prefix)) {
-          localValue = this.value.slice(this.prefix.length)
+        if (value && value.startsWith(this.prefix)) {
+          localValue = value.slice(this.prefix.length)
         } else {
-          localValue = this.value
+          localValue = value
         }
       } else {
-        localValue = this.value
+        localValue = value
       }
       if (localValue != this.localValue) {
         this.localValue = localValue

@@ -15,8 +15,6 @@
         <string-field :name="'label'" :label="'Label'" :value="model.label" @value-changed="onValueChanged" />
         <string-field :name="'type'" :label="'Type'" :value="model.type" :options="typeOptions" @value-changed="onValueChanged" />
 
-        
-
         <div class="field mt-4" v-if="model.type == 'string' || model.type == 'strings'">
           <label class="label">Options</label>
           <div class="control">
@@ -42,6 +40,13 @@
           </div>
           <div class="my-options" v-if="optionsMode == 'OrgUsers'">
             <string-field :value="orgUsersOptions" :options="groupOptions" @value-changed="onOrgUsersValueChanged" />
+          </div>
+        </div>
+
+        <div class="field mt-4" v-if="model.type == 'sheet'">
+          <label class="label">Columns</label>
+          <div class="my-columns">
+            <strings-field :value="model.columns" @value-changed="onColumnsValueChanged" />
           </div>
         </div>
 
@@ -76,9 +81,10 @@ export default {
         label: '',
         type: 'string',
         options: null,
+        columns: [],
         dashboard: true,
       },
-      typeOptions: ['string', 'strings', 'textarea', 'number', 'checkbox', 'file', 'files'],
+      typeOptions: ['string', 'strings', 'sheet', 'textarea', 'number', 'checkbox', 'file', 'files'],
       optionsMode: 'NoOptions',
       fixedOptions: [],
       orgUsersOptions: 'All',
@@ -148,6 +154,9 @@ export default {
     onInsertAfterChanged (val) {
       this.insertAfter = val[1]
     },
+    onColumnsValueChanged (val) {
+      this.model.columns = val[1]
+    },
   },
 }
 </script>
@@ -155,6 +164,10 @@ export default {
 <style scoped>
 .my-options {
   margin-left: 15px;
+  margin-top: -15px;
+}
+
+.my-columns {
   margin-top: -15px;
 }
 </style>

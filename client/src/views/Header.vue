@@ -24,12 +24,12 @@
           </div>
 
           <div class="navbar-end">
-            <div class="navbar-item has-dropdown is-hoverable" v-if="orgIds && orgIds.length > 1">
-              <a class="navbar-link">
+            <div class="navbar-item has-dropdown is-hoverable" v-if="orgIds">
+              <router-link class="navbar-link" :to="'/user/edit'">
                 <span class="icon">
                   <i class="fas fa-user"></i>
                 </span>
-              </a>
+              </router-link>
 
               <div class="navbar-dropdown">
                 <router-link class="navbar-item" v-for="(orgId, i) in orgIds" :key="'h-m-d-' + i" :to="'/org/' + orgId + '/workflow-configs'">
@@ -37,6 +37,7 @@
                 </router-link>
               </div>
             </div>
+
             <router-link class="navbar-item" v-if="!token" :to="'/'">
               <span class="icon">
                 <i class="fas fa-sign-in-alt"></i>
@@ -92,7 +93,7 @@ export default {
       if (this.org) {
         return this.org.name
       }
-      return 'Simple Workflow'
+      return 'My Workflow Hub'
     },
     homeRoute () {
       if (this.org) {
@@ -122,6 +123,9 @@ export default {
       return this.orgUser.role == 'Owner' || this.orgUser.role == 'Admin'
     },
     availableConfigs () {
+      if (!this.orgWorkflowConfigs) {
+        return []
+      }
       if (this.isAdmin) {
         return this.orgWorkflowConfigs
       }

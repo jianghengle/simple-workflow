@@ -79,11 +79,15 @@
                     </div>
                   </div>
 
+                  <div v-if="modelDiff" class="notification is-warning is-light">
+                    You have unsaved changes!
+                  </div>
+
                   <hr />
 
                   <div class="field is-grouped">
                     <div class="control" v-for="(t, i) in availableTransitions" :key="'at-' + i">
-                      <button class="button is-dark" :class="{'is-loading': transiting}" @click="transiteWorkflow(t)">{{t.actionLabel}}</button>
+                      <button class="button is-link" :class="{'is-loading': transiting}" @click="transiteWorkflow(t)">{{t.actionLabel}}</button>
                     </div>
                     <div class="control">
                       <button class="button" @click="sendEmail">Send Email</button>
@@ -91,10 +95,6 @@
                     <div class="control" v-if="folderId">
                       <router-link class="button" :to="'/org/' + orgId + '/new-workflow/' + configId + '/' + folderId + '/' + workflowId">Copy to New</router-link>
                     </div>
-                  </div>
-
-                  <div v-if="modelDiff" class="notification is-warning is-light">
-                    You have unsaved changes!
                   </div>
 
                   <div v-if="error" class="notification is-danger is-light">
@@ -264,8 +264,26 @@ export default {
         return false
       }
       for (const f of this.orgWorkflowConfig.fields) {
-        if (JSON.stringify(this.model[f.name]) != JSON.stringify(this.newModel[f.name])) {
-          return true
+        if (f.type == 'sheet') {
+          if (!this.model[f.name] || this.newModel[f.name]) {
+            continue
+          }
+          if (this.model[f.name].length != this.newModel[f.name].length) {
+            return true
+          }
+          for (var i=0;i<this.model[f.name].length;i++) {
+            var modelRow = this.model[f.name][i]
+            var newModelRow = this.newModel[f.name][i]
+            for (const c of f.columns) {
+              if (modelRow[c] != newModelRow[c]) {
+                return true
+              }
+            }
+          }
+        } else {
+          if (JSON.stringify(this.model[f.name]) != JSON.stringify(this.newModel[f.name])) {
+            return true
+          }
         }
       }
       return false
@@ -301,7 +319,7 @@ export default {
   methods: {
     getWorkflow () {
       this.waiting = true
-      this.$http.get(this.server + '/org/get-workflow/' + this.configId + '/' + this.workflowId).then(resp => {
+      this.$http.get(this.server + '/org/get-workflow/' + this.configId + '/' + this.workflowId + '/').then(resp => {
         this.model = resp.body
         this.waiting = false
       }, err => {

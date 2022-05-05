@@ -55,6 +55,7 @@ def handle(event, context):
         req = MyReq(event)
         router = MyRouter([
             ('GET', '/user/get-user', True, user_controller.get_user),
+            ('POST', '/user/update-username', True, user_controller.update_username),
             ('POST', '/user/generate-password-reset-token', False, user_controller.generate_password_reset_token),
             ('POST', '/user/send-invite', True, user_controller.send_invite),
             ('POST', '/user/reset-password', False, user_controller.reset_password),

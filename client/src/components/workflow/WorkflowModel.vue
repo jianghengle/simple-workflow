@@ -7,6 +7,7 @@
       <checkbox-field v-if="f.type == 'checkbox'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" />
       <file-field v-if="f.type == 'file'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" />
       <files-field v-if="f.type == 'files'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" />
+      <sheet-field v-if="f.type == 'sheet'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly" :columns="f.columns"  @value-changed="onValueChanged" />
     </div>
 
   </div>
@@ -19,6 +20,7 @@ import NumberField from '@/components/form/NumberField'
 import CheckboxField from '@/components/form/CheckboxField'
 import FileField from '@/components/form/FileField'
 import FilesField from '@/components/form/FilesField'
+import SheetField from '@/components/form/SheetField'
 
 export default {
   name: 'WorkflowModel',
@@ -28,7 +30,8 @@ export default {
     NumberField,
     CheckboxField,
     FileField,
-    FilesField
+    FilesField,
+    SheetField
   },
   props: ['model', 'readonly'],
   data () {

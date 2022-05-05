@@ -138,6 +138,9 @@ export default {
       return this.orgUser.role == 'Owner' || this.orgUser.role == 'Admin'
     },
     availableConfigs () {
+      if (!this.orgWorkflowConfigs) {
+        return []
+      }
       if (this.isAdmin) {
         return this.orgWorkflowConfigs
       }

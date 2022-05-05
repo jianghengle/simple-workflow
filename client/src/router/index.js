@@ -11,12 +11,17 @@ const routes = [
     component: Home
   },
   {
+    path: '/user/edit',
+    name: 'UserEdit',
+    component: () => import('../views/UserEdit.vue')
+  },
+  {
     path: '/user/forgot-password',
     name: 'ForgotPassword',
     component: () => import('../views/ForgotPassword.vue')
   },
   {
-    path: '/user/change-password/:email/:key',
+    path: '/user/change-password/:email/:key/:mode',
     name: 'ChangePassword',
     component: () => import('../views/ChangePassword.vue')
   },

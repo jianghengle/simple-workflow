@@ -3,7 +3,7 @@
     <div class="field">
       <label class="label">{{label}}</label>
       <div class="control">
-        <textarea class="textarea" :placeholder="placeholder" v-model="localValue" :readonly="readonly"></textarea>
+        <textarea class="textarea" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly"></textarea>
       </div>
     </div>
   </div>
@@ -30,9 +30,8 @@ export default {
   },
   methods: {
     setLocalValue () {
-      var localValue = this.value   
-      if (localValue != this.localValue) {
-        this.localValue = localValue
+      if (this.localValue != this.value) {
+        this.localValue = String(this.value)
       }
     },
   },

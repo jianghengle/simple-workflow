@@ -8,14 +8,32 @@ from .. import MyError
 def get_user(req):
     return {
         'email': req.user.email,
+        'username': req.user.username,
         'hasPassword': bool(req.user.encryptedPassword),
         'orgIds': req.user.orgIds,
+    }
+
+def update_username(req):
+    user = req.user.update_username(req.body['username'])
+    try:
+        for org_id in user.orgIds:
+            org = OrgModel.get_by_id(org_id)
+            org_user = OrgUserModel.get_by_email(org.data, user.email)
+            if org_user:
+                OrgUserModel.update_by_email(org.data, user.email, {'username': user.username})
+    except:
+        print('failed to update org user username: ' + user.email)
+    return {
+        'email': user.email,
+        'username': user.username,
+        'hasPassword': bool(user.encryptedPassword),
+        'orgIds': user.orgIds,
     }
 
 def generate_password_reset_token(req):
     email = req.body['email']
     user = UserModel.generate_password_reset_token(email)
-    password_reset_link = 'https://myworkflowhub.com/user/change-password/' +  quote(user.email, safe='') + '/' + user.resetPasswordToken
+    password_reset_link = 'https://myworkflowhub.com/user/change-password/' +  quote(user.email, safe='') + '/' + user.resetPasswordToken + '/reset'
     body_text = RESET_TEXT.format(password_reset_link)
     body_html = RESET_HTML.format(password_reset_link, password_reset_link)
     recipents = [email]
@@ -28,11 +46,12 @@ def send_invite(req):
     if user.encryptedPassword:
         raise MyError('User has been activated.')
     user = UserModel.generate_password_reset_token(email)
-    password_reset_link = 'https://myworkflowhub.com/user/change-password/' +  quote(user.email, safe='') + '/' + user.resetPasswordToken
-    request_user_email = req.user.email
-    org_name = req.org_info['name']
-    body_text = INVITE_TEXT.format(request_user_email, org_name, password_reset_link)
-    body_html = INVITE_HTML.format(request_user_email, org_name, password_reset_link, password_reset_link)
+    password_reset_link = 'https://myworkflowhub.com/user/change-password/' +  quote(user.email, safe='') + '/' + user.resetPasswordToken + '/new'
+    request_user = str(req.user.username) + '<' + req.user.email + '>'
+    org = OrgModel.get_by_id(req.org_info['id'])
+    org_name = org.name
+    body_text = INVITE_TEXT.format(request_user, org_name, password_reset_link)
+    body_html = INVITE_HTML.format(request_user, org_name, password_reset_link, password_reset_link)
     recipents = [email]
     send_email(recipents, INVITE_SUBJECT, body_text, body_html)
     return {'ok': True}
@@ -42,12 +61,17 @@ def reset_password(req):
     password = req.body['password']
     token = req.body['token']
     user = UserModel.reset_password(email, password, token)
+    if 'username' in req.body:
+        user.update_username(req.body['username'])
     try:
         for org_id in user.orgIds:
             org = OrgModel.get_by_id(org_id)
             org_user = OrgUserModel.get_by_email(org.data, email)
             if org_user:
-                OrgUserModel.update_by_email(org.data, email, {'activated': True})
+                data = {'activated': True}
+                if 'username' in req.body:
+                    data['username'] = req.body['username']
+                OrgUserModel.update_by_email(org.data, email, data)
     except:
         print('failed to activate org user: ' + email)
     return {'ok': True}
@@ -58,6 +82,7 @@ def auth_user(req):
     user = UserModel.auth_user(email, password)
     return {
         'email': user.email,
+        'username': user.username,
         'token': user.token,
         'orgIds': user.orgIds,
     }
@@ -77,11 +102,11 @@ RESET_HTML = """<html>
 
 INVITE_SUBJECT = "myworkflowhub.com invite"
 
-INVITE_TEXT = "Hi, {} invited you to join the org {}. Please use the following link to set your password:\r\n{}, and then sign in https://myworkflowhub.com"
+INVITE_TEXT = "Hi, {} invited you to join the org \"{}\". Please use the following link to set your password:\r\n{}, and then sign in https://myworkflowhub.com"
 
 INVITE_HTML = """<html>
 <body>
-  <p>Hi, {} invited you to join the org {}. Please use the following link to set your password:</p>
+  <p>Hi, {} invited you to join the org \"{}\". Please use the following link to set your password:</p>
   <p><a href='{}' target="_blank">{}</a></p>
   <p>and then you can sign in https://myworkflowhub.com.</p>
 </body>

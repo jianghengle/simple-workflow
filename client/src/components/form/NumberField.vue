@@ -4,7 +4,7 @@
       <label class="label">{{label}}</label>
       <div class="field">
         <div class="control" v-if="!options">
-          <input class="input" type="number" :placeholder="placeholder" v-model.number="localValue" :readonly="readonly">
+          <input class="input" type="number" :placeholder="placeholder" v-model.number="localValue" :readonly="readonly" :disabled="readonly">
         </div>
         <div class="control" v-if="options">
           <div class="select">
@@ -54,9 +54,8 @@ export default {
   },
   methods: {
     setLocalValue () {
-      var localValue = this.value
-      if (localValue != this.localValue) {
-        this.localValue = localValue
+      if (this.localValue != this.value) {
+        this.localValue = Number(this.value)
       }
     },
     

@@ -2,6 +2,7 @@
 export const state = {
   token: localStorage.getItem('token'),
   email: localStorage.getItem('email'),
+  username: localStorage.getItem('username'),
   orgIds: null,
 }
  
@@ -9,6 +10,7 @@ export const state = {
 export const mutations = {
   setUser (state, user) {
     state.email = user.email
+    state.username = user.username
     state.orgIds = user.orgIds
     if (user.token) {
       state.token = user.token
@@ -19,9 +21,11 @@ export const mutations = {
   reset (state) {
     state.token = null
     state.email = null
+    state.username = null
     state.orgIds = null
     localStorage.removeItem('token')
     localStorage.removeItem('email')
+    localStorage.removeItem('username')
   }
 }
 

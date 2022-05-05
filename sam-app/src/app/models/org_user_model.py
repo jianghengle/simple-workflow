@@ -5,7 +5,7 @@ from .. import MyError
 
 
 class OrgUserModel(Model):
-    Fields = ['email', 'role', 'groups', 'activated']
+    Fields = ['email', 'username', 'role', 'groups', 'activated']
 
     def is_admin(self):
         return self.role == 'Owner' or self.role == 'Admin'

@@ -84,9 +84,14 @@ export default {
   },
   methods: {
     setLocalValue () {
-      var localValueJson = JSON.stringify(this.value)
-      if (localValueJson != JSON.stringify(this.localValue)) {
-        this.localValue = JSON.parse(localValueJson)
+      var valueJson = JSON.stringify(this.value)
+      if (valueJson != JSON.stringify(this.localValue)) {
+        var value = JSON.parse(valueJson)
+        if (Array.isArray(value)) {
+          this.localValue = value.map(i => String(i))
+        } else {
+          this.localValue = [String(value)]
+        }
       }
     },
     removeElement(index) {
