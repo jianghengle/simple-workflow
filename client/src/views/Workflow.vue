@@ -51,13 +51,18 @@
                     <div class="level-item has-text-centered">
                       <div>
                         <p class="heading">Created By</p>
-                        <p class="title is-6">{{model.createdBy}}</p>
+                        <p class="title is-6">
+                          <span>{{orgUsersMap[model.createdBy].username}}</span><br/>
+                          <span>{{model.createdBy}}</span>
+                        </p>
                       </div>
                     </div>
                     <div class="level-item has-text-centered">
                       <div>
                         <p class="heading">Created At</p>
-                        <p class="title is-6">{{createdAtLabel}}</p>
+                        <p class="title is-6">
+                          <span>{{createdAtLabel}}</span>
+                        </p>
                       </div>
                     </div>
                     <div class="level-item has-text-centered">
@@ -165,6 +170,16 @@ export default {
     },
     orgUsers () {
       return this.$store.state.org.orgUsers
+    },
+    orgUsersMap () {
+      if (!this.orgUsers) {
+        return {}
+      }
+      var result = {}
+      for (const u of this.orgUsers) {
+        result[u.email] = u
+      }
+      return result
     },
     orgUser () {
       if (!this.email || !this.orgUsers) {
@@ -404,8 +419,8 @@ export default {
             }
           }
         }
-        return false
       }
+      return false
     },
     transiteWorkflow (transition) {
       var confirm = {

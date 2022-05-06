@@ -169,6 +169,16 @@ export default {
     orgUsers () {
       return this.$store.state.org.orgUsers
     },
+    orgUsersMap () {
+      if (!this.orgUsers) {
+        return {}
+      }
+      var result = {}
+      for (const u of this.orgUsers) {
+        result[u.email] = u
+      }
+      return result
+    },
     orgUser () {
       if (!this.email || !this.orgUsers) {
         return null
@@ -208,8 +218,30 @@ export default {
       return []
     },
     showingWorkflows () {
+      var orgUsersMap = this.orgUsersMap
+      var fields = this.orgWorkflowConfig ? this.orgWorkflowConfig.fields : []
+      var mappedWorkflows = this.workflows.map(w => {
+        var copy = JSON.parse(JSON.stringify(w))
+        var createdBy = orgUsersMap[w.createdBy]
+        copy.createdBy = (createdBy && createdBy.username) ? createdBy.username : w.createdBy
+        for (const f of fields) {
+          if (typeof(f.options) == 'string') {
+            if (f.type == 'string') {
+              var orgUser = orgUsersMap[w[f.name]]
+              copy[f.name] = (orgUser && orgUser.username) ? orgUser.username : w[f.name]
+            }
+            if (f.type == 'strings' && Array.isArray(w[f.name])) {
+              copy[f.name] = w[f.name].map(e => {
+                var u = orgUsersMap[e]
+                return (u && u.username) ? u.username : e
+              })
+            }
+          }
+        }
+        return copy
+      })
       var search = this.search.trim().toLowerCase()
-      var filteredWorkflows = this.workflows.filter(w => {
+      var filteredWorkflows = mappedWorkflows.filter(w => {
         for(const f of this.dashboardFields) {
           var val = w[f.name] ? w[f.name].toString().toLowerCase() : ''
           if (val.includes(this.search)) {
@@ -313,8 +345,8 @@ export default {
             }
           }
         }
-        return false
       }
+      return false
     },
   },
   mounted () {

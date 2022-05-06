@@ -2,8 +2,9 @@
   <div v-if="localModel" class="mb-6">
     <div v-for="(f, i) in fields" :key="'wfm-f-'+i">
       <string-field v-if="f.type == 'string'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly" @value-changed="onValueChanged" :options="f.optionValues" />
+      <strings-field v-if="f.type == 'strings'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly" @value-changed="onValueChanged" :options="f.optionValues" />
       <textarea-field v-if="f.type == 'textarea'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" />
-      <number-field v-if="f.type == 'number'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" :options="f.optionValues" />
+      <number-field v-if="f.type == 'number'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" />
       <checkbox-field v-if="f.type == 'checkbox'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" />
       <file-field v-if="f.type == 'file'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" />
       <files-field v-if="f.type == 'files'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="readonly"  @value-changed="onValueChanged" />
@@ -15,6 +16,7 @@
 
 <script>
 import StringField from '@/components/form/StringField'
+import StringsField from '@/components/form/StringsField'
 import TextareaField from '@/components/form/TextareaField'
 import NumberField from '@/components/form/NumberField'
 import CheckboxField from '@/components/form/CheckboxField'
@@ -26,6 +28,7 @@ export default {
   name: 'WorkflowModel',
   components: {
     StringField,
+    StringsField,
     TextareaField,
     NumberField,
     CheckboxField,
@@ -52,13 +55,13 @@ export default {
       }
       var groups = {'All': []}
       this.orgUsers.forEach(function(user) {
-        groups['All'].push(user.email)
+        groups['All'].push({value: user.email, label: user.username ? (user.username + ' <' + user.email + '>') : user.email})
         if (user.groups) {
           user.groups.forEach(function(g) {
             if (!groups[g]) {
               groups[g] = []
             }
-            groups[g].push(user.email)
+            groups[g].push({value: user.email, label: user.username ? (user.username + ' <' + user.email + '>') : user.email})
           })
         }
       })

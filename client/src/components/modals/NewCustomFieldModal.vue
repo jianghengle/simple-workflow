@@ -84,7 +84,7 @@ export default {
         columns: [],
         dashboard: true,
       },
-      typeOptions: ['string', 'strings', 'sheet', 'textarea', 'number', 'checkbox', 'file', 'files'],
+      typeOptions: ['string', 'sheet', 'textarea', 'number', 'checkbox', 'file', 'files'],
       optionsMode: 'NoOptions',
       fixedOptions: [],
       orgUsersOptions: 'All',

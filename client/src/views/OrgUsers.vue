@@ -67,6 +67,7 @@
               <thead>
                 <tr>
                   <th>#</th>
+                  <th>Username</th>
                   <th>Email</th>
                   <th>Role</th>
                   <th>Groups</th>
@@ -76,6 +77,7 @@
               <tbody>
                 <tr v-for="(user, i) in showingOrgUsers" :key="'org-user-' + i" class="is-clickable" @click="openUserModal(user)">
                   <td>{{i + 1}}</td>
+                  <td>{{user.username}}</td>
                   <td>{{user.email}}</td>
                   <td>{{user.role}}</td>
                   <td>
