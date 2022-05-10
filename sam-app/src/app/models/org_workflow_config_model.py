@@ -6,7 +6,14 @@ from .. import MyError
 
 
 class OrgWorkflowConfigModel(Model):
-    Fields = ['id', 'name', 'description', 'tableName', 'fields', 'form', 'states', 'userGroup', 'createdAt', 'updatedAt', 'updatedBy', 'isDeleted']
+    Fields = ['id', 'name', 'description', 'tableName', 'fields', 'form', 'states', 'userGroup', 'createdAt', 'updatedAt', 'updatedBy', 'isDeleted', 'count']
+
+    def increment_count(self, org_info):
+        table_name = org_info['workflowConfigTable']
+        aws_role = org_info['awsRole']
+        aws_region = org_info['awsRegion']
+        table = dynamo_service.get_table(table_name, aws_role, aws_region)
+        return dynamo_service.increment_attr(table, 'id', self.id, 'count')
 
     @staticmethod
     def get_all_by_org_info(org_info):

@@ -80,7 +80,10 @@ export default {
   methods: {
     setLocalValue () {
       var localValue = null
-      var value = String(this.value)
+      var value = ''
+      if (this.value) {
+        value = String(this.value)
+      }
       if (this.prefix) {
         if (value && value.startsWith(this.prefix)) {
           localValue = value.slice(this.prefix.length)

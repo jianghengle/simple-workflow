@@ -19,15 +19,14 @@ def get_workflow(req, config_id, workflow_id):
 
 def create_workflow(req):
     data = req.body
-    data['id'] = str(uuid.uuid4())
     data['createdBy'] = req.user.email
     timestamp = int(time.time()*1000)
     data['createdAt'] = timestamp
     data['updatedAt'] = timestamp
     folder = OrgWorkflowFolderModel.get(req.org_info, data['folderId'])
     workflow_config = OrgWorkflowConfigModel.get(req.org_info, folder.workflowConfigId)
+    data['id'] = str(workflow_config.increment_count(req.org_info))
     workflow = WorkflowModel.create(req.org_info, workflow_config, data)
-    print(workflow.data)
     return workflow.data
 
 def update_workflow(req):

@@ -175,21 +175,8 @@ export default {
         states: [
           {
             name: 'Created',
-            permissions: {
-              view: {
-                groups: ['All'],
-                others: [],
-              },
-              save: {
-                groups: ['All'],
-                others: [],
-              },
-              delete: {
-                groups: ['All'],
-                others: [],
-              }
-            },
-            form: {},
+            color: '#1A237E',
+            permissions: [],
             transitions: []
           }
         ],

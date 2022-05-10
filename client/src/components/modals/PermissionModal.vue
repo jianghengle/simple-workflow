@@ -9,12 +9,15 @@
       </header>
       <section class="modal-card-body" v-if="localModel">
 
-        <strings-field :name="'groups'" :label="'Groups'" :value="localModel.groups" @value-changed="onValueChanged" :options="groupOptions" />
-        <strings-field :name="'others'" :label="'Others'" :value="localModel.others" @value-changed="onValueChanged" :options="otherOptions" />
+        <string-field :name="'action'" :label="'Action'" :value="localModel.action" @value-changed="onValueChanged" :options="actions" :readonly="index != null" />
+        <strings-field v-if="localModel.action != 'Delete'" :name="'actionFields'" :label="'Action Fields'" :value="localModel.actionFields" @value-changed="onValueChanged" :options="fieldOptions" />
+        <strings-field :name="'groups'" :label="'Actor Groups'" :value="localModel.groups" @value-changed="onValueChanged" :options="groupOptions" />
+        <strings-field :name="'others'" :label="'Actor Others'" :value="localModel.others" @value-changed="onValueChanged" :options="otherOptions" />
 
       </section>
       <footer class="modal-card-foot">
         <a class="button is-link" @click="save">Save</a>
+        <a class="button is-danger" @click="remove">Delete</a>
         <a class="button" @click="close">Cancel</a>
       </footer>
     </div>
@@ -22,17 +25,20 @@
 </template>
 
 <script>
+import StringField from '@/components/form/StringField'
 import StringsField from '@/components/form/StringsField'
 
 export default {
   name: 'permission-modal',
   components: {
-    StringsField
+    StringsField,
+    StringField
   },
-  props: ['opened', 'model', 'fields'],
+  props: ['opened', 'model', 'fields', 'index'],
   data () {
     return {
       localModel: null,
+      actions: ['View', 'Edit', 'Delete']
     }
   },
   computed: {
@@ -60,6 +66,11 @@ export default {
       fieldNames.push('Workflow Creator')
       return fieldNames
     },
+    fieldOptions () {
+      var fieldOptions = this.fields.map((f)=> f.name)
+      fieldOptions.unshift('All')
+      return fieldOptions
+    },
   },
   watch: {
     opened: function (val) {
@@ -73,7 +84,13 @@ export default {
       this.$emit('permission-modal-closed')
     },
     save () {
+      if (this.localModel.action == 'Delete') {
+        this.localModel.actionFields = ['All']
+      }
       this.$emit('permission-modal-saved', this.localModel)
+    },
+    remove () {
+      this.$emit('permission-modal-deleted')
     },
     onValueChanged (val) {
       var name = val[0]

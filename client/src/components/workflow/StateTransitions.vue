@@ -14,7 +14,7 @@
       <thead>
         <tr>
           <th>To State</th>
-          <th>Action Label</th>
+          <th>Button Label</th>
           <th>Actor</th>
         </tr>
       </thead>

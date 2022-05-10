@@ -1,6 +1,7 @@
 <template>
   <div v-if="localModel" class="pl-4 pr-4">
     <string-field :name="'name'" :label="'Name'" :value="localModel.name" :placeholder="'State name'" @value-changed="onValueChanged" />
+    <color-picker :name="'color'" :label="'Color'" :value="localModel.color" @value-changed="onValueChanged" />
     <state-permissions :model="localModel.permissions" @model-changed="onValueChanged" :fields="fields" :stateName="localModel.name" />
     <state-transitions :model="localModel.transitions" @model-changed="onValueChanged" :fields="fields" :stateName="localModel.name" :stateNames="stateNames" />
   </div>
@@ -8,6 +9,7 @@
 
 <script>
 import StringField from '@/components/form/StringField'
+import ColorPicker from '@/components/form/ColorPicker'
 import StatePermissions from '@/components/workflow/StatePermissions'
 import StateTransitions from '@/components/workflow/StateTransitions'
 
@@ -16,7 +18,8 @@ export default {
   components: {
     StringField,
     StatePermissions,
-    StateTransitions
+    StateTransitions,
+    ColorPicker
   },
   props: ['model', 'index', 'fields', 'stateNames'],
   data () {

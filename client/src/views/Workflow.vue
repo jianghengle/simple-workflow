@@ -45,7 +45,9 @@
                     <div class="level-item has-text-centered">
                       <div>
                         <p class="heading">State</p>
-                        <span class="tag is-link is-medium has-text-weight-bold">{{model.state}}</span>
+                        <span class="tag is-link is-medium has-text-weight-bold" :style="{'background-color': stateColor}">
+                          {{model.state}}
+                        </span>
                       </div>
                     </div>
                     <div class="level-item has-text-centered">
@@ -73,7 +75,7 @@
                     </div>
                   </nav>
 
-                  <workflow-model :model="model" :readonly="!canSave" @model-updated="onModelUpdated" />
+                  <workflow-model :model="model" @model-updated="onModelUpdated" />
 
                   <div class="field is-grouped">
                     <div class="control" v-if="canSave">
@@ -92,7 +94,9 @@
 
                   <div class="field is-grouped">
                     <div class="control" v-for="(t, i) in availableTransitions" :key="'at-' + i">
-                      <button class="button is-link" :class="{'is-loading': transiting}" @click="transiteWorkflow(t)">{{t.actionLabel}}</button>
+                      <button class="button is-link" :class="{'is-loading': transiting}" @click="transiteWorkflow(t)" :style="{'background-color': getTransitionColor(t.toState)}">
+                        {{t.actionLabel}}
+                      </button>
                     </div>
                     <div class="control">
                       <button class="button" @click="sendEmail">Send Email</button>
@@ -207,6 +211,16 @@ export default {
       }
       return null
     },
+    stateColorMap () {
+      var stateColorMap = {}
+      if (!this.orgWorkflowConfig) {
+        return stateColorMap
+      }
+      for (const state of this.orgWorkflowConfig.states) {
+        stateColorMap[state.name] = state.color
+      }
+      return stateColorMap
+    },
     stateConfig () {
       if (!this.orgWorkflowConfig || !this.model) {
         return null
@@ -219,6 +233,18 @@ export default {
         }
       }
       return stateConfig
+    },
+    statePermissions () {
+      if (this.stateConfig) {
+        return this.stateConfig.permissions
+      }
+      return null
+    },
+    stateColor () {
+      if (!this.stateConfig || !this.stateConfig.color) {
+        return '#485fc7'
+      }
+      return this.stateConfig.color
     },
     canAccess () {
       if (!this.orgUser) {
@@ -242,7 +268,7 @@ export default {
       if (!this.stateConfig) {
         return false
       }
-      return this.userHasPermission(this.stateConfig.permissions.view)
+      return this.isAnyFieldViewable()
     },
     canSave () {
       if (!this.canAccess) {
@@ -251,7 +277,7 @@ export default {
       if (!this.stateConfig) {
         return false
       }
-      return this.userHasPermission(this.stateConfig.permissions.save)
+      return this.isAnyFieldEditable()
     },
     canDelete () {
       if (!this.canAccess) {
@@ -260,7 +286,12 @@ export default {
       if (!this.stateConfig) {
         return false
       }
-      return this.userHasPermission(this.stateConfig.permissions.delete)
+      for (const permission of this.statePermissions) {
+        if (permission.action == 'Delete' && this.userIsActor(permission)) {
+          return true
+        }
+      }
+      return false
     },
     createdAtLabel () {
       if (!this.model || !this.model.createdAt) {
@@ -312,7 +343,7 @@ export default {
       }
       var transitions = []
       for (const t of this.stateConfig.transitions) {
-        if (this.userHasPermission(t.actor)) {
+        if (this.userIsActor(t.actor)) {
           transitions.push(t)
         }
       }
@@ -332,6 +363,10 @@ export default {
     },
   },
   methods: {
+    getTransitionColor (stateName) {
+      var color = this.stateColorMap[stateName]
+      return color || '#485fc7'
+    },
     getWorkflow () {
       this.waiting = true
       this.$http.get(this.server + '/org/get-workflow/' + this.configId + '/' + this.workflowId + '/').then(resp => {
@@ -386,7 +421,49 @@ export default {
         this.deleting = false
       })
     },
-    userHasPermission (permission) {
+    isAnyFieldViewable () {
+      for (const f of this.orgWorkflowConfig.fields) {
+        if (this.isFieldViewable(f)) {
+          return true
+        }
+      }
+      return false
+    },
+    isFieldViewable (f) {
+      for (const permission of this.statePermissions) {
+        if (permission.action != 'View') {
+          continue
+        }
+        if (this.userIsActor(permission)) {
+          if (permission.actionFields.includes(f.name) || permission.actionFields.includes('All')) {
+            return true
+          }
+        }
+      }
+      return false
+    },
+    isAnyFieldEditable () {
+      for (const f of this.orgWorkflowConfig.fields) {
+        if (this.isFieldEditable(f)) {
+          return true
+        }
+      }
+      return false
+    },
+    isFieldEditable (f) {
+      for (const permission of this.statePermissions) {
+        if (permission.action != 'Edit') {
+          continue
+        }
+        if (this.userIsActor(permission)) {
+          if (permission.actionFields.includes(f.name) || permission.actionFields.includes('All')) {
+            return true
+          }
+        }
+      }
+      return false
+    },
+    userIsActor (permission) {
       var allowedGroups = permission.groups
       for (const g of allowedGroups) {
         if (this.orgUser.groups.includes(g)) {

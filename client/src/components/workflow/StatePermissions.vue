@@ -1,6 +1,12 @@
 <template>
   <div v-if="localModel" class="mt-5">
     <div class="field">
+      <a class="button is-pulled-right" @click="openPemrissionModal(null)">
+        <span class="icon">
+          <i class="fas fa-plus"></i>
+        </span>
+        <span>Add Permission</span>
+      </a>
       <label class="label">Permissions</label>
     </div>
 
@@ -8,46 +14,23 @@
       <thead>
         <tr>
           <th>Action</th>
-          <th>Groups</th>
-          <th>Others</th>
+          <th>Action on Fields</th>
+          <th>Actor</th>
         </tr>
       </thead>
       <tbody>
-        <tr class="is-clickable" @click="openPemrissionModal('view')">
-          <td>View</td>
+        <tr class="is-clickable" v-for="(p, i) in localModel" :key="stateName + '-p-t-p-r-' + i" @click="openPemrissionModal(i)">
+          <td>{{p.action}}</td>
           <td>
-            <div v-for="(g, i) in localModel.view.groups" :key="stateName + '-p-t-v-g-' + i">
-              <span class="tag" >{{g}}</span>
+            <div v-for="(f, j) in p.actionFields" :key="stateName + '-p-t-p-f-' + i + '-' + j">
+              <span class="tag" >{{f}}</span>&nbsp;
             </div>
           </td>
           <td>
-            <div v-for="(o, i) in localModel.view.others" :key="stateName + '-p-t-v-o-' + i">
-              <span class="tag" >{{o}}</span>
-            </div>
-          </td>
-        </tr>
-        <tr class="is-clickable" @click="openPemrissionModal('save')">
-          <td>Save</td>
-          <td>
-            <div v-for="(g, i) in localModel.save.groups" :key="stateName + '-p-t-s-g-' + i">
-              <span class="tag" >{{g}}</span>
-            </div>
-          </td>
-          <td>
-            <div v-for="(o, i) in localModel.save.others" :key="stateName + '-p-t-s-o-' + i">
-              <span class="tag" >{{o}}</span>
-            </div>
-          </td>
-        </tr>
-        <tr class="is-clickable" @click="openPemrissionModal('delete')">
-          <td>Delete</td>
-          <td>
-            <div v-for="(g, i) in localModel.delete.groups" :key="stateName + '-p-t-d-g-' + i">
+            <div v-for="(g, j) in p.groups" :key="stateName + '-p-t-p-g-' + i + '-' + j">
               <span class="tag" >{{g}}</span>&nbsp;
             </div>
-          </td>
-          <td>
-            <div v-for="(o, i) in localModel.delete.others" :key="stateName + '-p-t-d-o-' + i">
+            <div v-for="(o, j) in p.others" :key="stateName + '-p-t-p-o-' + i + '-' + j">
               <span class="tag" >{{o}}</span>&nbsp;
             </div>
           </td>
@@ -55,8 +38,8 @@
       </tbody>
     </table>
 
-    <permission-modal :opened="permissionModal.opened" :model="permissionModal.model" :fields="fields"
-      @permission-modal-closed="onPemrissionModalClosed" @permission-modal-saved="onPemrissionModalSaved" />
+    <permission-modal :opened="permissionModal.opened" :model="permissionModal.model" :fields="fields" :index="permissionModal.index"
+      @permission-modal-closed="onPemrissionModalClosed" @permission-modal-saved="onPemrissionModalSaved" @permission-modal-deleted="onPemrissionModalDeleted" />
 
   </div>
 </template>
@@ -74,19 +57,16 @@ export default {
   data () {
     return {
       localModel: null,
-      actions: ['view', 'save', 'delete'],
       permissionModal: {
         opened: false,
         model: null,
-        type: null,
+        index: null
       },
     }
   },
   watch: {
     model: function (val) {
-      if (val) {
-        this.setLocalModel()
-      }
+      this.setLocalModel()
     },
     localModel: {
       handler (val) {
@@ -102,29 +82,65 @@ export default {
         var localModelJson = JSON.stringify(this.localModel)
         if (modelJson != localModelJson) {
           var localModel = JSON.parse(modelJson)
-          for (const a of this.actions) {
-            if (!localModel[a]) {
-              localModel[a] = {
-                groups: ['All'],
-                others: []
-              }
-            }
+          if (Array.isArray(localModel)) {
+            this.localModel = localModel
+          } else {
+            this.localModel = []
           }
-          this.localModel = localModel
         }
+      } else {
+        this.localModel = []
       }
     },
-    openPemrissionModal (type) {
-      this.permissionModal.type = type
-      this.permissionModal.model = this.localModel[type]
+    openPemrissionModal (index) {
+      this.permissionModal.index = index
+      if (index == null) {
+        this.permissionModal.model = {
+          action: 'View',
+          actionFields: ['All'],
+          groups: [],
+          others: [],
+        }
+      } else {
+        this.permissionModal.model = this.localModel[index]
+      }
       this.permissionModal.opened = true
     },
     onPemrissionModalClosed () {
       this.permissionModal.opened = false
     },
     onPemrissionModalSaved (val) {
-      this.localModel[this.permissionModal.type] = val
+      var permission = JSON.parse(JSON.stringify(val))
+      if (this.permissionModal.index == null) {
+        var index = this.findPermissionIndex(permission.action)
+        this.localModel.splice(index, 0, permission)
+      } else {
+        this.localModel.splice(this.permissionModal.index, 1, permission)
+      }
       this.permissionModal.opened = false
+    },
+    onPemrissionModalDeleted () {
+      this.localModel.splice(this.permissionModal.index, 1)
+      this.permissionModal.opened = false
+    },
+    findPermissionIndex (action) {
+      var lastIndexes = {'View': -1, 'Edit': -1, 'Delete': -1}
+      for (var i=0;i<this.localModel.length;i++) {
+        lastIndexes[this.localModel[i].action] = i
+      }
+      if (action == 'View') {
+        if (lastIndexes['View'] != -1) {
+          return lastIndexes['View'] + 1
+        }
+        return 0
+      }
+      if (action == 'Edit') {
+        if (lastIndexes['Edit'] != -1) {
+          return lastIndexes['Edit'] + 1
+        }
+        return lastIndexes['View'] + 1
+      }
+      return this.localModel.length
     },
   },
   mounted () {

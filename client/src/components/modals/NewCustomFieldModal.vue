@@ -11,7 +11,7 @@
 
         <string-field v-if="insertOptions.length" :label="'Insert After'" :value="insertAfter" :options="insertOptions" @value-changed="onInsertAfterChanged" />
 
-        <string-field :name="'name'" :label="'Name'" :value="model.name" @value-changed="onValueChanged" />
+        <string-field :name="'name'" :label="'Name'" :value="model.name" @value-changed="onValueChanged" :constraints="nameConstraints" />
         <string-field :name="'label'" :label="'Label'" :value="model.label" @value-changed="onValueChanged" />
         <string-field :name="'type'" :label="'Type'" :value="model.type" :options="typeOptions" @value-changed="onValueChanged" />
 
@@ -88,7 +88,11 @@ export default {
       optionsMode: 'NoOptions',
       fixedOptions: [],
       orgUsersOptions: 'All',
-      insertAfter: 0
+      insertAfter: 0,
+      nameConstraints: [
+        {match: /^([a-zA-Z][a-zA-Z\d]*)$/, info: 'Name must only contain alphabet and digital charactors.'},
+        {notMatch: /(^id$|^folderId$|^state$|^stateEvents$|^createdBy$|^All$)/, info: 'Name must NOT be reserved names.'}
+      ]
     }
   },
   computed: {

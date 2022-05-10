@@ -69,6 +69,16 @@ def update_item(table, key_name, key_value, attr_updates):
         UpdateExpression=exp,
     )
 
+def increment_attr(table, key_name, key_value, attr):
+    response = table.update_item(
+        Key={key_name: key_value},
+        ExpressionAttributeNames={'#' + attr: attr},
+        ExpressionAttributeValues={':inc': 1},
+        UpdateExpression='ADD #' + attr + ' :inc',
+        ReturnValues='UPDATED_NEW'
+    )
+    return response['Attributes'][attr]
+
 def create_item(table, item, key_name):
     table.put_item(Item=item, ConditionExpression='attribute_not_exists(' + key_name + ')')
 

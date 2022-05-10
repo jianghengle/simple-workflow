@@ -162,7 +162,10 @@ export default {
     getWorkflow () {
       this.waiting = true
       this.$http.get(this.server + '/org/get-workflow/' + this.configId + '/' + this.copyFrom).then(resp => {
-        this.model = resp.body
+        var model = resp.body
+        model.state = this.firstStateName
+        model.createdBy = this.email
+        this.model = model
         this.waiting = false
       }, err => {
         console.log('Failed to get workflow')
@@ -198,6 +201,8 @@ export default {
         for(const field of this.orgWorkflowConfig.fields) {
           model[field.name] = null
         }
+        model.state = this.firstStateName
+        model.createdBy = this.email
         this.model = model
       }
     }

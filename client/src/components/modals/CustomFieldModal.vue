@@ -89,7 +89,7 @@ export default {
       orgUsersOptions: 'All',
       nameConstraints: [
         {match: /^([a-zA-Z][a-zA-Z\d]*)$/, info: 'Name must only contain alphabet and digital charactors.'},
-        {notMatch: /(^id$|^folderId$|^state$|^stateEvents$|^createdBy$)/, info: 'Name must not be reserved names.'}
+        {notMatch: /(^id$|^folderId$|^state$|^stateEvents$|^createdBy$|^All$)/, info: 'Name must NOT be reserved names.'}
       ]
     }
   },

@@ -37,7 +37,7 @@
             <p class="control has-icons-left">
               <span class="select">
                 <select v-model="filter">
-                  <option :value="'CurrentFolder'">Current Folder</option>
+                  <option :value="'CurrentFolder'">All</option>
                 </select>
               </span>
               <span class="icon is-small is-left">
@@ -68,13 +68,13 @@
                     <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
                   </span>
                 </th>
-                <th class="is-clickable" @click="changeSortOption('state')">
+                <th class="has-text-centered is-clickable" @click="changeSortOption('state')">
                   <span>State</span>
                   <span class="icon" v-if="sortOption.field == 'state'">
                     <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
                   </span>
                 </th>
-                <th v-for="(f, i) in dashboardFields" :key="'wfth' + i" class="is-clickable" @click="changeSortOption(f.name)">
+                <th v-for="(f, i) in dashboardFields" :key="'wfth' + i" class="is-clickable" @click="changeSortOption(f.name)" :class="{'has-text-right': f.type=='number'}">
                   <span>{{f.label}}</span>
                   <span class="icon" v-if="sortOption.field == f.name">
                     <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
@@ -103,12 +103,14 @@
             <tbody>
               <tr class="is-clickable" v-for="(w, i) in showingWorkflows" :key="'wftbr-' + i" @click="viewWorkflow(w)">
                 <td><input type="checkbox"></td>
-                <td class="workflow-id">{{w.id}}</td>
-                <td>{{w.state}}</td>
-                <td v-for="(f, j) in dashboardFields" :key="'wftb-r-' + i + '-c-' + j">
+                <td>{{w.id}}</td>
+                <td class="has-text-centered">
+                  <span class="tag is-link" :style="{'background-color': w.stateColor}">{{w.state}}</span>
+                </td>
+                <td v-for="(f, j) in dashboardFields" :key="'wftb-r-' + i + '-c-' + j" :class="{'has-text-right': f.type=='number'}">
                   {{w[f.name]}}
                 </td>
-                <td class="workflow-id">{{w.createdBy}}</td>
+                <td>{{w.createdBy}}</td>
                 <td>{{w.createdAtLabel}}</td>
                 <td>{{w.updatedAtLabel}}</td>
               </tr>
@@ -208,6 +210,16 @@ export default {
       }
       return null
     },
+    stateColorMap () {
+      var stateColorMap = {}
+      if (!this.orgWorkflowConfig) {
+        return stateColorMap
+      }
+      for (const state of this.orgWorkflowConfig.states) {
+        stateColorMap[state.name] = state.color
+      }
+      return stateColorMap
+    },
     dashboardFields () {
       if (!this.orgWorkflowConfig) {
         return []
@@ -220,6 +232,7 @@ export default {
     showingWorkflows () {
       var orgUsersMap = this.orgUsersMap
       var fields = this.orgWorkflowConfig ? this.orgWorkflowConfig.fields : []
+      var colorMap = this.stateColorMap
       var mappedWorkflows = this.workflows.map(w => {
         var copy = JSON.parse(JSON.stringify(w))
         var createdBy = orgUsersMap[w.createdBy]
@@ -238,6 +251,7 @@ export default {
             }
           }
         }
+        copy.stateColor = colorMap[w.state] ? colorMap[w.state] : '#485fc7'
         return copy
       })
       var search = this.search.trim().toLowerCase()
@@ -283,7 +297,7 @@ export default {
     getWorkflowsInFolder () {
       this.waiting = true
       this.$http.get(this.server + '/org/get-org-workflows-in-folder/' + this.folderId).then(resp => {
-        this.workflows = resp.body.filter(this.canViewWorkflow)
+        this.workflows = this.processWorkflows(resp.body)
         this.waiting = false
       }, err => {
         console.log('Failed to get workflows')
@@ -301,18 +315,52 @@ export default {
         this.sortOption.asc = true
       }
     },
-    canViewWorkflow (w) {
-      var stateConfig = this.orgWorkflowConfig.states.filter(sc => sc.name == w.state)[0]
-      if (!stateConfig) {
-        return false
+    processWorkflows (workflows) {
+      var processed = []
+      for (var w of workflows) {
+        var fieldPermissions = this.getFieldPermissions(w)
+        var viewable = false
+        for (const f of this.dashboardFields) {
+          if(fieldPermissions[f.name]['View']) {
+            viewable = true
+          } else {
+            w[f.name] = '...'
+          }
+        }
+        if (viewable) {
+          processed.push(w)
+        }
       }
-      var permission = stateConfig.permissions.view
-      if (!permission || !this.orgUser) {
-        return false
-      }
-      return this.userHasPermission(w, permission)
+      return processed
     },
-    userHasPermission (workflow, permission) {
+    getFieldPermissions (w) {
+      var stateConfig = this.orgWorkflowConfig.states.filter(sc => sc.name == w.state)[0]
+      var fieldPermissions = {}
+      for (const f of this.dashboardFields) {
+        fieldPermissions[f.name] = {'View': false}
+      }
+      for (const permission of stateConfig.permissions) {
+        if (permission.action != 'View') {
+          continue
+        }
+        if (this.userIsActor(w, permission)) {
+          for (const af of permission.actionFields) {
+            if (af == 'All') {
+              for (const f of this.dashboardFields) {
+                fieldPermissions[f.name][permission.action] = true
+              }
+              return fieldPermissions
+            } else {
+              if (fieldPermissions[af] != undefined) {
+                fieldPermissions[af][permission.action] = true
+              }
+            }
+          }
+        }
+      }
+      return fieldPermissions
+    },
+    userIsActor (workflow, permission) {
       var allowedGroups = permission.groups
       for (const g of allowedGroups) {
         if (this.orgUser.groups.includes(g)) {
