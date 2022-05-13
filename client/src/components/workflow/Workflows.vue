@@ -92,12 +92,12 @@
                     <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
                   </span>
                 </th>
-                <th class="is-clickable" @click="changeSortOption('updatedAt')">
+                <!--<th class="is-clickable" @click="changeSortOption('updatedAt')">
                   <span>Updated At</span>
                   <span class="icon" v-if="sortOption.field == 'updatedAt'">
                     <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
                   </span>
-                </th>
+                </th>-->
               </tr>
             </thead>
             <tbody>
@@ -112,7 +112,7 @@
                 </td>
                 <td>{{w.createdBy}}</td>
                 <td>{{w.createdAtLabel}}</td>
-                <td>{{w.updatedAtLabel}}</td>
+                <!--<td>{{w.updatedAtLabel}}</td>-->
               </tr>
             </tbody>
           </table>
@@ -145,7 +145,7 @@ export default {
       search: '',
       sortOption: {
         field: 'createdAt',
-        asc: true
+        asc: false
       }
     }
   },

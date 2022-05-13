@@ -77,20 +77,8 @@ export default {
     addNewState () {
       this.localModel.push({
         name: 'New',
-        permissions: {
-          view: {
-            groups: ['All'],
-            others: []
-          },
-          save: {
-            groups: ['All'],
-            others: []
-          },
-          delete: {
-            groups: [],
-            others: []
-          }
-        },
+        color: '#3F51B5',
+        permissions: [],
         transitions: [],
       })
       this.currentStateIndex = this.localModel.length - 1

@@ -157,6 +157,15 @@ export default {
       var name = val[0]
       var value = JSON.parse(JSON.stringify(val[1]))
       this.localModel[name] = value
+      for (const f of this.fields) {
+        if ((f.type == 'string' || f.type == 'number') && (f.linkedFrom == name) && this.isFieldEditable(f)) {
+          for (const v of f.linkedValues) {
+            if (value == v['From']) {
+              this.localModel[f.name] = v['To']
+            }
+          }
+        }
+      }
     },
     isFieldViewable (f) {
       for (const permission of this.statePermissions) {

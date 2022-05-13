@@ -4,7 +4,7 @@
     <div class="modal-background"></div>
     <div class="modal-card">
       <header class="modal-card-head">
-        <p class="modal-card-title">New Field</p>
+        <p class="modal-card-title">Edit Field</p>
         <button class="delete" @click="close"></button>
       </header>
       <section class="modal-card-body">
@@ -48,6 +48,11 @@
           </div>
         </div>
 
+        <string-field v-if="(model.type == 'string' || model.type == 'number') && linkedFromOptions && linkedFromOptions.length > 1"
+          :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="linkedFromOptions" @value-changed="onValueChanged" />
+
+        <sheet-field v-if="model.linkedFrom" :name="'linkedValues'" :label="'Auto Fill Values'" :columns="['From', 'To']" :value="model.linkedValues"  @value-changed="onValueChanged" />
+
         <checkbox-field :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
 
       </section>
@@ -64,15 +69,17 @@
 import StringField from '@/components/form/StringField'
 import StringsField from '@/components/form/StringsField'
 import CheckboxField from '@/components/form/CheckboxField'
+import SheetField from '@/components/form/SheetField'
 
 export default {
   name: 'custom-field-modal',
   components: {
     StringField,
     StringsField,
-    CheckboxField
+    CheckboxField,
+    SheetField
   },
-  props: ['opened', 'field', 'index'],
+  props: ['opened', 'field', 'index', 'linkedFromOptions'],
   data () {
     return {
       model: {
@@ -81,6 +88,8 @@ export default {
         type: 'string',
         options: null,
         columns: [],
+        linkedFrom: '',
+        linkedValues: [],
         dashboard: true,
       },
       typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'sheet'],
@@ -140,6 +149,8 @@ export default {
         }
         this.model.dashboard = this.field.dashboard
         this.model.columns = this.field.columns
+        this.model.linkedFrom = this.field.linkedFrom
+        this.model.linkedValues = this.field.linkedValues ? JSON.parse(JSON.stringify(this.field.linkedValues)) : []
       }
     },
   },

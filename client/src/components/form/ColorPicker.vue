@@ -41,7 +41,7 @@ export default {
         if (this.value) {
           this.localValue = this.value
         } else {
-          this.localValue = '#1A237E'
+          this.localValue = '#3F51B5'
         }
       }
     },

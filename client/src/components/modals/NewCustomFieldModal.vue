@@ -50,6 +50,11 @@
           </div>
         </div>
 
+        <string-field v-if="(model.type == 'string' || model.type == 'number') && linkedFromOptions && linkedFromOptions.length > 1"
+          :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="linkedFromOptions" @value-changed="onValueChanged" />
+
+        <sheet-field v-if="model.linkedFrom" :name="'linkedValues'" :label="'Auto Fill Values'" :columns="['From', 'To']" :value="model.linkedValues"  @value-changed="onValueChanged" />
+
         <checkbox-field :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
 
       </section>
@@ -65,15 +70,17 @@
 import StringField from '@/components/form/StringField'
 import StringsField from '@/components/form/StringsField'
 import CheckboxField from '@/components/form/CheckboxField'
+import SheetField from '@/components/form/SheetField'
 
 export default {
   name: 'new-custom-field-modal',
   components: {
     StringField,
     StringsField,
-    CheckboxField
+    CheckboxField,
+    SheetField
   },
-  props: ['opened', 'insertOptions'],
+  props: ['opened', 'insertOptions', 'linkedFromOptions'],
   data () {
     return {
       model: {
@@ -82,6 +89,8 @@ export default {
         type: 'string',
         options: null,
         columns: [],
+        linkedFrom: '',
+        linkedValues: [],
         dashboard: true,
       },
       typeOptions: ['string', 'sheet', 'textarea', 'number', 'checkbox', 'file', 'files'],
@@ -118,6 +127,14 @@ export default {
       arr.unshift('All')
       return arr
     },
+  },
+  watch: {
+    opened: function (val) {
+      if (val) {
+        this.model.linkedFrom = ''
+        this.insertAfter = this.insertOptions.length - 1
+      }
+    }
   },
   methods: {
     close () {

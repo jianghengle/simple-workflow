@@ -55,7 +55,7 @@
                         <p class="heading">Created By</p>
                         <p class="title is-6">
                           <span>{{orgUsersMap[model.createdBy].username}}</span><br/>
-                          <span>{{model.createdBy}}</span>
+                          <span class="has-text-weight-light">{{model.createdBy}}</span>
                         </p>
                       </div>
                     </div>
@@ -470,10 +470,11 @@ export default {
           return true
         }
       }
+      var model = this.newModel || this.model
       var others = permission.others
       for (const o of others) {
         if (o == 'Workflow Creator') {
-          if (this.model.createdBy == this.email) {
+          if (model.createdBy == this.email) {
             return true
           }
         } else {
@@ -485,12 +486,12 @@ export default {
           }
           if (field) {
             if (field.type == 'string') {
-              if (this.email == this.model[field.name]) {
+              if (this.email == model[field.name]) {
                 return true
               }
             }
             if (field.type == 'strings') {
-              if (this.model[field.name].includes(this.email)) {
+              if (model[field.name].includes(this.email)) {
                 return true
               }
             }

@@ -49,10 +49,10 @@
       </tbody>
     </table>
 
-    <new-custom-field-modal :opened="newCustomFieldModal.opened" :insertOptions="newCustomFieldModal.insertOptions"
+    <new-custom-field-modal :opened="newCustomFieldModal.opened" :insertOptions="newCustomFieldModal.insertOptions" :linkedFromOptions="newCustomFieldModal.linkedFromOptions"
       @new-custom-field-modal-saved="onNewCustomFieldModalSaved" @new-custom-field-modal-closed="onNewCustomFieldModalClosed" />
     
-    <custom-field-modal :opened="customFieldModal.opened" :field="customFieldModal.field" :index="customFieldModal.index"
+    <custom-field-modal :opened="customFieldModal.opened" :field="customFieldModal.field" :index="customFieldModal.index" :linkedFromOptions="customFieldModal.linkedFromOptions"
       @custom-field-modal-saved="onCustomFieldModalSaved" @custom-field-modal-closed="onCustomFieldModalClosed"
       @custom-field-modal-deleted="onCustomFieldModalDeleted" />
 
@@ -75,12 +75,14 @@ export default {
       localModel: [],
       newCustomFieldModal: {
         insertOptions: [],
-        opened: false
+        opened: false,
+        linkedFromOptions: [],
       },
       customFieldModal: {
         opened: false,
         field: null,
         index: null,
+        linkedFromOptions: [],
       },
     }
   },
@@ -106,13 +108,22 @@ export default {
     },
     openNewCustomFieldModal () {
       var options = []
+      var linkedFromOptions = [{label: 'None', value: ''}]
       for (var i=0;i<this.localModel.length;i++) {
+        var field = this.localModel[i]
         options.push({
-          label: this.localModel[i].name,
+          label: field.name,
           value: i
         })
+        if (field.type == 'string' || field.type == 'number') {
+          linkedFromOptions.push({
+            label: field.name,
+            value: field.name
+          })
+        }
       }
       this.newCustomFieldModal.insertOptions = options
+      this.newCustomFieldModal.linkedFromOptions = linkedFromOptions
       this.newCustomFieldModal.opened = true
     },
     onNewCustomFieldModalSaved (val) {
@@ -125,6 +136,17 @@ export default {
     openCustomFieldModal (i) {
       this.customFieldModal.field = this.localModel[i]
       this.customFieldModal.index = i
+      var linkedFromOptions = [{label: 'None', value: ''}]
+      for (var j=0;j<this.localModel.length;j++) {
+        var field = this.localModel[j]
+        if (j != i && (field.type == 'string' || field.type == 'number')) {
+          linkedFromOptions.push({
+            label: field.name,
+            value: field.name
+          })
+        }
+      }
+      this.customFieldModal.linkedFromOptions = linkedFromOptions
       this.customFieldModal.opened = true
     },
     onCustomFieldModalSaved (val) {

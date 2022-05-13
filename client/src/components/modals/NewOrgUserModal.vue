@@ -122,7 +122,7 @@ export default {
         return
       }
       this.waiting = true
-      this.model.email = this.model.email.toLowerCase()
+      this.model.email = this.model.email.trim().toLowerCase()
       this.$http.post(this.server + '/org/create-org-user', this.model).then(resp => {
         var orgUser = resp.body
         this.$store.commit('org/updateOrgUser', orgUser)
