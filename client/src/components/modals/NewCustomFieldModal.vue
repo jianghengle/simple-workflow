@@ -34,6 +34,16 @@
           </div>
           <div class="control">
             <label class="radio">
+              <input type="radio" name="optionsMode" value="Deprived" v-model="optionsMode">
+              Deprived
+            </label>
+          </div>
+          <div class="my-options" v-if="optionsMode == 'Deprived'">
+            <string-field :name="'from'" :value="optionsDeprived.from" :options="linkedFromOptions" @value-changed="onOptionsDeprivedChanged" />
+            <items-field v-if="optionsDeprived.from" :name="'mappings'" :value="optionsDeprived.mappings" :fields="optionsDeprivedMappingFields" @value-changed="onOptionsDeprivedChanged" />
+          </div>
+          <div class="control">
+            <label class="radio">
               <input type="radio" name="optionsMode" value="OrgUsers" v-model="optionsMode">
               Org Users
             </label>
@@ -50,12 +60,18 @@
           </div>
         </div>
 
+        <div class="field mt-4" v-if="model.type == 'items'">
+          <custom-item-fields :model="model.itemFields" :linkedFromOptions="linkedFromOptions" @model-changed="onValueChanged" />
+        </div>
+
         <string-field v-if="(model.type == 'string' || model.type == 'number') && linkedFromOptions && linkedFromOptions.length > 1"
           :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="linkedFromOptions" @value-changed="onValueChanged" />
 
         <sheet-field v-if="model.linkedFrom" :name="'linkedValues'" :label="'Auto Fill Values'" :columns="['From', 'To']" :value="model.linkedValues"  @value-changed="onValueChanged" />
 
-        <checkbox-field :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
+        <checkbox-field v-if="(model.type == 'string' || model.type == 'number')" :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
+
+        <checkbox-field v-if="(model.dashboard || model.type == 'number')"  :name="'twoDigits'" :label="'Number in Dashboard'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
 
       </section>
       <footer class="modal-card-foot">
@@ -71,6 +87,8 @@ import StringField from '@/components/form/StringField'
 import StringsField from '@/components/form/StringsField'
 import CheckboxField from '@/components/form/CheckboxField'
 import SheetField from '@/components/form/SheetField'
+import ItemsField from '@/components/form/ItemsField'
+import CustomItemFields from '@/components/workflow/CustomItemFields'
 
 export default {
   name: 'new-custom-field-modal',
@@ -78,7 +96,9 @@ export default {
     StringField,
     StringsField,
     CheckboxField,
-    SheetField
+    SheetField,
+    ItemsField,
+    CustomItemFields
   },
   props: ['opened', 'insertOptions', 'linkedFromOptions'],
   data () {
@@ -89,11 +109,13 @@ export default {
         type: 'string',
         options: null,
         columns: [],
+        itemFields: [],
         linkedFrom: '',
         linkedValues: [],
         dashboard: true,
+        twoDigits: true,
       },
-      typeOptions: ['string', 'sheet', 'textarea', 'number', 'checkbox', 'file', 'files'],
+      typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'sheet', 'items'],
       optionsMode: 'NoOptions',
       fixedOptions: [],
       orgUsersOptions: 'All',
@@ -101,7 +123,15 @@ export default {
       nameConstraints: [
         {match: /^([a-zA-Z][a-zA-Z\d]*)$/, info: 'Name must only contain alphabet and digital charactors.'},
         {notMatch: /(^id$|^folderId$|^state$|^stateEvents$|^createdBy$|^All$)/, info: 'Name must NOT be reserved names.'}
-      ]
+      ],
+      optionsDeprived: {
+        from: '',
+        mappings: [],
+      },
+      optionsDeprivedMappingFields: [
+        {name: 'from', type: 'string', label: 'Deprived From'},
+        {name: 'deprivedOptions', type: 'strings', label: 'Deprived Options'},
+      ],
     }
   },
   computed: {
@@ -153,9 +183,18 @@ export default {
           this.model.options = null
         } else if (this.optionsMode == 'Fixed') {
           this.model.options = this.fixedOptions
-        } else {
+        } else if (typeof(this.field.options) == 'string') {
           this.model.options = this.orgUsersOptions
+        } else {
+          if (this.optionsDeprived.from && this.optionsDeprived.mappings.length) {
+            this.model.options = JSON.parse(JSON.stringify(this.optionsDeprived))
+          } else {
+            this.model.options = null
+          }
         }
+      }
+      if (this.model.type != 'string' && this.model.type != 'number') {
+        this.model.dashboard = false
       }
       this.$emit('new-custom-field-modal-saved', [this.insertAfter, this.model])
     },
@@ -178,6 +217,9 @@ export default {
     onColumnsValueChanged (val) {
       this.model.columns = val[1]
     },
+    onOptionsDeprivedChanged (val) {
+      this.optionsDeprived[val[0]] = JSON.parse(JSON.stringify(val[1]))
+    }
   },
 }
 </script>

@@ -16,6 +16,9 @@
 
     <custom-fields :model="localModel.fields" @model-changed="onValueChanged" />
 
+    <strings-field :name="'creationNotifyingGroups'" :label="'Creation Notifying Groups'" :value="localModel.creationNotifyingGroups" @value-changed="onValueChanged" :options="groupOptions" />
+    <strings-field :name="'creationNotifyingOthers'" :label="'Creation Notifying Others'" :value="localModel.creationNotifyingOthers" @value-changed="onValueChanged" :options="otherOptions" />
+
     <custom-states :model="localModel.states" @model-changed="onValueChanged" :fields="localModel.fields" />
 
   </div>
@@ -23,17 +26,21 @@
 
 <script>
 import StringField from '@/components/form/StringField'
+import StringsField from '@/components/form/StringsField'
 import TextareaField from '@/components/form/TextareaField'
 import CustomFields from '@/components/workflow/CustomFields'
 import CustomStates from '@/components/workflow/CustomStates'
+import CheckboxField from '@/components/form/CheckboxField'
 
 export default {
   name: 'workflow-config-model',
   components: {
     StringField,
+    StringsField,
     TextareaField,
     CustomFields,
-    CustomStates
+    CustomStates,
+    CheckboxField
   },
   props: ['model', 'isNew'],
   data () {
@@ -64,6 +71,11 @@ export default {
       arr.unshift('All')
       return arr
     },
+    otherOptions () {
+      var fieldNames = this.localModel.fields.map((f)=> f.name)
+      fieldNames.push('Workflow Creator')
+      return fieldNames
+    },
   },
   watch: {
     model: function (val) {
@@ -80,7 +92,7 @@ export default {
     setLocalModel () {
       var model = JSON.parse(JSON.stringify(this.model))
       var localModel = {}
-      var attrs = ['tableName', 'name', 'description', 'userGroup', 'fields', 'states']
+      var attrs = ['tableName', 'name', 'description', 'userGroup', 'fields', 'states', 'creationNotifyingGroups', 'creationNotifyingOthers']
       for(const attr of attrs) {
         localModel[attr] = model[attr]
       }

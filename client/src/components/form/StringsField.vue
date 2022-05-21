@@ -2,6 +2,7 @@
   <div class="mt-4">
     <div class="field">
       <label class="label">{{label}}</label>
+
       <div v-if="localValue">
         <div class="control mb-1" v-for="(g, i) in localValue" :key="'strings-field-element-' + i">
           <span class="tag is-medium">
@@ -17,8 +18,8 @@
         <div class="control" v-if="options && !options.allowNew">
           <div class="select" >
             <select v-model="newElement">
-              <option  v-for="(opt, i) in options" :key="'strings-field-option-' + i" >
-                {{opt}}
+              <option  v-for="(opt, i) in allOptions" :key="'strings-field-option-' + i" :value="opt.value">
+                {{opt.label}}
               </option>
             </select>
           </div>
@@ -60,10 +61,24 @@ export default {
   },
   computed: {
     allOptions () {
+      if (Array.isArray(this.options)) {
+        if (this.options.length) {
+          var first = this.options[0]
+          if (typeof first === 'object') {
+            return this.options
+          }
+          return this.options.map(opt => ({value: opt, label: opt}))
+        }
+        return []
+      }
+
       var options = []
       if (this.options.values) {
         options = this.options.values.map(function(opt) {
-          return {label: opt, value: opt}
+          if (typeof(opt) == 'string') {
+            return {label: opt, value: opt}
+          }
+          return opt
         })
       }
       if (this.options.allowNew) {
@@ -84,14 +99,18 @@ export default {
   },
   methods: {
     setLocalValue () {
-      var valueJson = JSON.stringify(this.value)
-      if (valueJson != JSON.stringify(this.localValue)) {
-        var value = JSON.parse(valueJson)
-        if (Array.isArray(value)) {
-          this.localValue = value.map(i => String(i))
-        } else {
-          this.localValue = [String(value)]
+      if (this.value) {
+        var valueJson = JSON.stringify(this.value)
+        if (valueJson != JSON.stringify(this.localValue)) {
+          var value = JSON.parse(valueJson)
+          if (Array.isArray(value)) {
+            this.localValue = value.map(i => String(i))
+          } else {
+            this.localValue = [String(value)]
+          }
         }
+      } else {
+        this.localValue = []
       }
     },
     removeElement(index) {

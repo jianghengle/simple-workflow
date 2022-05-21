@@ -9,7 +9,48 @@
       </header>
       <section class="modal-card-body" >
 
-        <strings-field :name="'receivers'" :label="'Receivers'" :value="message.receivers" @value-changed="onValueChanged" :options="receiverOptions" />
+        <div class="field">
+          <label class="label">Receivers</label>
+          <div>
+            <div class="control mb-1" v-for="(r, i) in message.receivers" :key="'receivers-element-' + i">
+              <span class="tag is-medium">
+                <span>{{r}}</span>
+                <button class="delete ml-3" @click="removeReceiver(i)"></button>
+              </span>
+            </div>
+          </div>
+
+          <div class="field has-addons">
+            <div class="control has-icons-left">
+              <span class="select">
+                <select v-model="selectedGroup">
+                  <option v-for="(g, i) in groups" :key="'receivers-group-options'+i">{{g}}</option>
+                </select>
+              </span>
+              <span class="icon is-small is-left">
+                <i class="fas fa-filter"></i>
+              </span>
+            </div>
+            <div class="control">
+              <div class="select" >
+                <select v-model="selectedReceiver">
+                  <option  v-for="(opt, i) in selectedGroupUsers" :key="'strings-field-option-' + i" :value="opt.value">
+                    {{opt.label}}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="control">
+              <a class="button" @click="addReceiver">
+                <span class="icon is-small">
+                  <i class="fas fa-plus"></i>
+                </span>
+              </a>
+            </div>
+          </div>
+          
+        </div>
+
         <textarea-field :name="'additionalMessage'" :label="'Additional Message'" :value="message.additionalMessage" @value-changed="onValueChanged" />
         
         <div v-if="error" class="notification is-danger is-light mt-4">
@@ -51,7 +92,9 @@ export default {
         receivers: [],
         additionalMessage: '',
         workflowLink: window.location.href,
-      }
+      },
+      selectedGroup: 'All',
+      selectedReceiver: ''
     }
   },
   computed: {
@@ -59,7 +102,48 @@ export default {
       return this.$store.state.config.server
     },
     orgUsers () {
-      return this.$store.state.org.orgUsers
+      if (!this.$store.state.org.orgUsers) {
+        return []
+      }
+      return this.$store.state.org.orgUsers.map(u => u).sort((a, b) => {
+        return String(a.username).localeCompare(String(b.username))
+      })
+    },
+    groups () {
+      if (!this.orgUsers) {
+        return []
+      }
+      var groups = []
+      for (const u of this.orgUsers) {
+        groups = groups.concat(u.groups)
+      }
+      groups = [...new Set(groups)]
+      groups.sort()
+      groups.unshift('All')
+      return groups
+    },
+    groupUsers () {
+      if (!this.orgUsers) {
+        return {}
+      }
+      var groupUsers = {}
+      for (const g of this.groups) {
+        groupUsers[g] = []
+      }
+      for (const u of this.orgUsers) {
+        groupUsers['All'].push(u)
+        for (const g of u.groups) {
+          groupUsers[g].push(u)
+        }
+      }
+      return groupUsers
+    },
+    selectedGroupUsers () {
+      var users = this.groupUsers[this.selectedGroup]
+      if (!users) {
+        return []
+      }
+      return users.map(u => ({value: u.email, label: u.username + ' <' + u.email + '>'}))
     },
     configId () {
       return this.$route.params.configId
@@ -80,18 +164,6 @@ export default {
         }
       }
       return null
-    },
-    receiverOptions () {
-      if (!this.orgUsers || !this.orgWorkflowConfig) {
-        return []
-      }
-      var userGroup = this.orgWorkflowConfig.userGroup
-      if (userGroup == 'All') {
-        return this.orgUsers.map(u => u.email)
-      }
-      return this.orgUsers.filter(u => {
-        return u.groups.includes(userGroup
-      )}).map(u => u.email)
     },
     canSend () {
       return this.message.receivers.length
@@ -124,6 +196,15 @@ export default {
       var name = val[0]
       var value = val[1]
       this.message[name] = value
+    },
+    removeReceiver (index) {
+      this.message.receivers.splice(index, 1)
+    },
+    addReceiver () {
+      if (!this.selectedReceiver || this.message.receivers.includes(this.selectedReceiver)) {
+        return
+      }
+      this.message.receivers.push(this.selectedReceiver)
     },
   },
 }

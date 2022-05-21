@@ -53,7 +53,7 @@ def send_email_about_workflow(req):
     workflow_link = data['workflowLink']
     additional_message = data['additionalMessage']
     subject = EMAIL_SUBJECT.format(workflow_id)
-    first_sentense = 'On behalf of User {}, myworkflowhub.com sent this message regarding workflow {}: {}'.format(email, workflow_link, additional_message)
+    first_sentense = 'On behalf of User {}, myworkflowhub.com sent this message regarding the workflow {}: {}'.format(email, workflow_link, additional_message)
     
     body_text = EMAIL_BODY_TEXT.format(first_sentense, workflow_id, workflow_link)
     body_html = EMAIL_BODY_HTML.format(first_sentense, workflow_id, workflow_link)

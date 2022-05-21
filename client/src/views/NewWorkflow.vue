@@ -184,12 +184,61 @@ export default {
       this.newModel.state = this.firstStateName
       this.newModel.folderId = this.folderId
       this.$http.post(this.server + '/org/create-workflow', this.newModel).then(resp => {
+        this.sendNotification(resp.body)
         this.$router.push('/org/' + this.orgId + '/workflow/' + this.configId + '/' + resp.body.id)
         this.creating = false
       }, err => {
         this.error = err
         this.creating = false
       })
+    },
+    sendNotification (workflow) {
+      var emails = this.collectEmails(workflow)
+      if (!emails.length) {
+        return
+      }
+      var message = {
+        workflowId: workflow.id,
+        workflowConfigId: this.orgWorkflowConfig.id,
+        receivers: emails,
+        additionalMessage: 'A workflow has been created by ' + this.orgUser.username + ' <' + this.orgUser.email + '>.',
+        workflowLink: window.location.origin + '/org/' + this.orgId + '/workflow/' + this.orgWorkflowConfig.id + '/' + workflow.id,
+      }
+      this.$http.post(this.server + '/org/send-email-about-workflow', message)
+    },
+    collectEmails (workflow) {
+      var emails = []
+      if (this.orgWorkflowConfig.creationNotifyingGroups && this.orgWorkflowConfig.creationNotifyingGroups.length) {
+        for (const u of this.orgUsers) {
+          if (this.orgWorkflowConfig.creationNotifyingGroups.includes('All')) {
+            emails.push(u.email)
+          } else {
+            for (const g of u.groups) {
+              if (this.orgWorkflowConfig.creationNotifyingGroups.includes(g)) {
+                emails.push(u.email)
+              }
+            }
+          }
+        }
+      }
+      if (this.orgWorkflowConfig.creationNotifyingOthers && this.orgWorkflowConfig.creationNotifyingOthers.length) {
+        for (const o of this.orgWorkflowConfig.creationNotifyingOthers) {
+          if (o == 'Workflow Creator') {
+            emails.push(this.email)
+          } else if(this.isValidateEmail(workflow[o])) {
+            emails.push(workflow[o])
+          }
+        }
+      }
+      return [...new Set(emails)]
+    },
+    isValidateEmail (email) {
+      if (!email) {
+        return false
+      }
+      return String(email)
+        .toLowerCase()
+        .match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
     },
   },
   mounted () {

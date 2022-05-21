@@ -180,6 +180,8 @@ export default {
             transitions: []
           }
         ],
+        creationNotifyingGroups: [],
+        creationNotifyingOthers: []
       }
     }
   },

@@ -59,16 +59,16 @@
           <table class="table is-fullwidth is-hoverable is-striped">
             <thead>
               <tr>
-                <th>
+                <!--<th>
                   <input type="checkbox">
-                </th>
+                </th>-->
                 <th class="is-clickable" @click="changeSortOption('id')">
                   <span>Id</span>
                   <span class="icon" v-if="sortOption.field == 'id'">
                     <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
                   </span>
                 </th>
-                <th class="has-text-centered is-clickable" @click="changeSortOption('state')">
+                <th class="is-clickable" @click="changeSortOption('state')">
                   <span>State</span>
                   <span class="icon" v-if="sortOption.field == 'state'">
                     <i class="fas" :class="{'fa-sort-up': sortOption.asc, 'fa-sort-down': !sortOption.asc}"></i>
@@ -102,13 +102,14 @@
             </thead>
             <tbody>
               <tr class="is-clickable" v-for="(w, i) in showingWorkflows" :key="'wftbr-' + i" @click="viewWorkflow(w)">
-                <td><input type="checkbox"></td>
+                <!--<td><input type="checkbox"></td>-->
                 <td>{{w.id}}</td>
-                <td class="has-text-centered">
+                <td>
                   <span class="tag is-link" :style="{'background-color': w.stateColor}">{{w.state}}</span>
                 </td>
                 <td v-for="(f, j) in dashboardFields" :key="'wftb-r-' + i + '-c-' + j" :class="{'has-text-right': f.type=='number'}">
-                  {{w[f.name]}}
+                  <span v-if="f.type=='number' && f.twoDigits">{{Number(w[f.name]).toLocaleString('en-US', {maximumFractionDigits: 2, minimumFractionDigits: 2, useGrouping: false})}}</span>
+                  <span v-else>{{w[f.name]}}</span>
                 </td>
                 <td>{{w.createdBy}}</td>
                 <td>{{w.createdAtLabel}}</td>
@@ -319,6 +320,9 @@ export default {
       var processed = []
       for (var w of workflows) {
         var fieldPermissions = this.getFieldPermissions(w)
+        if (!fieldPermissions) {
+          continue
+        }
         var viewable = false
         for (const f of this.dashboardFields) {
           if(fieldPermissions[f.name]['View']) {
@@ -335,6 +339,9 @@ export default {
     },
     getFieldPermissions (w) {
       var stateConfig = this.orgWorkflowConfig.states.filter(sc => sc.name == w.state)[0]
+      if (!stateConfig) {
+        return null
+      }
       var fieldPermissions = {}
       for (const f of this.dashboardFields) {
         fieldPermissions[f.name] = {'View': false}

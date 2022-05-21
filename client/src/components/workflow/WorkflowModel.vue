@@ -9,6 +9,7 @@
       <file-field v-if="f.type == 'file'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
       <files-field v-if="f.type == 'files'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
       <sheet-field v-if="f.type == 'sheet'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly" :columns="f.columns"  @value-changed="onValueChanged" />
+      <items-field v-if="f.type == 'items'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly" :fields="f.itemFields" :parentModel="localModel"  @value-changed="onValueChanged" />
     </div>
 
   </div>
@@ -23,6 +24,7 @@ import CheckboxField from '@/components/form/CheckboxField'
 import FileField from '@/components/form/FileField'
 import FilesField from '@/components/form/FilesField'
 import SheetField from '@/components/form/SheetField'
+import ItemsField from '@/components/form/ItemsField'
 
 export default {
   name: 'WorkflowModel',
@@ -34,7 +36,8 @@ export default {
     CheckboxField,
     FileField,
     FilesField,
-    SheetField
+    SheetField,
+    ItemsField
   },
   props: ['model'],
   data () {
@@ -125,8 +128,16 @@ export default {
         if (field.options) {
           if (Array.isArray(field.options)) {
             field.optionValues = field.options
-          } else {
+          } else if (typeof(field.options) == 'string') {
             field.optionValues = this.groups[field.options]
+          } else {
+            var v = this.localModel[field.options.from]
+            var mappings = {}
+            mappings[v] = []
+            for (const m of field.options.mappings) {
+              mappings[m.from] = m.deprivedOptions
+            }
+            field.optionValues = mappings[v]
           }
         }
         if (this.isFieldViewable(f)) {

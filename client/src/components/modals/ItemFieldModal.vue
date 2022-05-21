@@ -4,12 +4,12 @@
     <div class="modal-background"></div>
     <div class="modal-card">
       <header class="modal-card-head">
-        <p class="modal-card-title">Edit Field</p>
+        <p class="modal-card-title">Item Field</p>
         <button class="delete" @click="close"></button>
       </header>
       <section class="modal-card-body">
 
-        <string-field :name="'name'" :label="'Name'" :value="model.name" @value-changed="onValueChanged" :constraints="nameConstraints" />
+        <string-field :name="'name'" :label="'Name'" :value="model.name" @value-changed="onValueChanged" />
         <string-field :name="'label'" :label="'Label'" :value="model.label" @value-changed="onValueChanged" />
         <string-field :name="'type'" :label="'Type'" :value="model.type" :options="typeOptions" @value-changed="onValueChanged" />
 
@@ -51,30 +51,14 @@
           </div>
         </div>
 
-        <div class="field mt-4" v-if="model.type == 'sheet'">
-          <label class="label">Columns</label>
-          <div>
-            <strings-field :value="model.columns" @value-changed="onColumnsValueChanged" />
-          </div>
-        </div>
+        <checkbox-field v-if="model.type == 'number'"  :name="'showSum'" :label="'Sum'" :inlineLabel="'Show'" :value="model.showSum" @value-changed="onValueChanged" />
 
-        <div class="field mt-4" v-if="model.type == 'items'">
-          <custom-item-fields :model="model.itemFields" :linkedFromOptions="linkedFromOptions" @model-changed="onValueChanged" />
-        </div>
-
-        <string-field v-if="(model.type == 'string' || model.type == 'number') && linkedFromOptions && linkedFromOptions.length > 1"
-          :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="linkedFromOptions" @value-changed="onValueChanged" />
-
-        <sheet-field v-if="(model.type == 'string' || model.type == 'number') && linkedFromOptions && linkedFromOptions.length > 1 && model.linkedFrom" :name="'linkedValues'" :label="'Auto Fill Values'" :columns="['From', 'To']" :value="model.linkedValues"  @value-changed="onValueChanged" />
-
-        <checkbox-field v-if="(model.type == 'string' || model.type == 'number')"  :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
-
-        <checkbox-field v-if="(model.dashboard || model.type == 'number')"  :name="'twoDigits'" :label="'Number in Dashboard'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
+        <checkbox-field v-if="model.type == 'number'"  :name="'twoDigits'" :label="'Number in table'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
 
       </section>
       <footer class="modal-card-foot">
         <a class="button is-link"  :disabled="!canSave" @click="save">Save</a>
-        <a class="button is-danger" @click="deleteField">Delete</a>
+        <a class="button is-danger" v-if="index != null" @click="deleteField">Delete</a>
         <a class="button" @click="close">Cancel</a>
       </footer>
     </div>
@@ -85,9 +69,7 @@
 import StringField from '@/components/form/StringField'
 import StringsField from '@/components/form/StringsField'
 import CheckboxField from '@/components/form/CheckboxField'
-import SheetField from '@/components/form/SheetField'
 import ItemsField from '@/components/form/ItemsField'
-import CustomItemFields from '@/components/workflow/CustomItemFields'
 
 export default {
   name: 'custom-field-modal',
@@ -95,9 +77,7 @@ export default {
     StringField,
     StringsField,
     CheckboxField,
-    SheetField,
     ItemsField,
-    CustomItemFields
   },
   props: ['opened', 'field', 'index', 'linkedFromOptions'],
   data () {
@@ -107,21 +87,13 @@ export default {
         label: '',
         type: 'string',
         options: null,
-        columns: [],
-        itemFields: [],
-        linkedFrom: '',
-        linkedValues: [],
-        dashboard: true,
+        showSum: false,
         twoDigits: true,
       },
-      typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'sheet', 'items'],
+      typeOptions: ['string', 'number'],
       optionsMode: 'NoOptions',
       fixedOptions: [],
       orgUsersOptions: 'All',
-      nameConstraints: [
-        {match: /^([a-zA-Z][a-zA-Z\d]*)$/, info: 'Name must only contain alphabet and digital charactors.'},
-        {notMatch: /(^id$|^folderId$|^state$|^stateEvents$|^createdBy$|^All$)/, info: 'Name must NOT be reserved names.'}
-      ],
       optionsDeprived: {
         from: '',
         mappings: [],
@@ -180,17 +152,14 @@ export default {
           this.fixedOptions = []
           this.orgUsersOptions ='All'
         }
-        this.model.dashboard = this.field.dashboard
-        this.model.columns = this.field.columns
-        this.model.itemFields = this.field.itemFields
-        this.model.linkedFrom = this.field.linkedFrom
-        this.model.linkedValues = this.field.linkedValues ? JSON.parse(JSON.stringify(this.field.linkedValues)) : []
+        this.model.showSum = this.field.showSum
+        this.model.twoDigits = this.field.twoDigits
       }
     },
   },
   methods: {
     close () {
-      this.$emit('custom-field-modal-closed')
+      this.$emit('item-field-modal-closed')
     },
     save () {
       if (!this.canSave) {
@@ -215,10 +184,10 @@ export default {
           }
         }
       }
-      if (this.model.type != 'string' && this.model.type != 'number') {
-        this.model.dashboard = false
+      if (this.model.type != 'number') {
+        this.model.showSum = false
       }
-      this.$emit('custom-field-modal-saved', [this.index, this.model])
+      this.$emit('item-field-modal-saved', this.model)
     },
     onValueChanged (val) {
       var name = val[0]
@@ -247,10 +216,7 @@ export default {
       this.$store.commit('modals/openConfirmModal', confirm)
     },
     deleteFieldConfirmed () {
-      this.$emit('custom-field-modal-deleted', this.index)
-    },
-    onColumnsValueChanged (val) {
-      this.model.columns = val[1]
+      this.$emit('item-field-modal-deleted')
     },
     onOptionsDeprivedChanged (val) {
       this.optionsDeprived[val[0]] = JSON.parse(JSON.stringify(val[1]))

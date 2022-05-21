@@ -310,8 +310,8 @@ export default {
         return false
       }
       for (const f of this.orgWorkflowConfig.fields) {
-        if (f.type == 'sheet') {
-          if (!this.model[f.name] || this.newModel[f.name]) {
+        if (f.type == 'sheet' || f.type == 'items') {
+          if (!this.model[f.name] || !this.newModel[f.name]) {
             continue
           }
           if (this.model[f.name].length != this.newModel[f.name].length) {
@@ -320,14 +320,48 @@ export default {
           for (var i=0;i<this.model[f.name].length;i++) {
             var modelRow = this.model[f.name][i]
             var newModelRow = this.newModel[f.name][i]
-            for (const c of f.columns) {
-              if (modelRow[c] != newModelRow[c]) {
+            if (f.type == 'sheet') {
+              for (const c of f.columns) {
+                if (modelRow[c] != newModelRow[c]) {
+                  return true
+                }
+              }
+            } else {
+              for (const c of f.itemFields) {
+                if (modelRow[c.name] != newModelRow[c.name]) {
+                  return true
+                }
+              }
+            }
+          }
+        } else if (f.type == 'files' || f.type == 'file') {
+          if (!this.model[f.name] && this.newModel[f.name]) {
+            return true
+          }
+          if (this.model[f.name] && !this.newModel[f.name]) {
+            return true
+          }
+          if (this.model[f.name] && this.newModel[f.name]) {
+            if (f.type == 'file') {
+              if (this.model[f.name].key != this.newModel[f.name].key) {
                 return true
+              }
+            } else if (this.model[f.name].length != this.newModel[f.name].length) {
+              return true
+            } else {
+              for (var i=0;i<this.model[f.name].length;i++) {
+                if (this.model[f.name][i].key != this.newModel[f.name][i].key) {
+                  return true
+                }
               }
             }
           }
         } else {
-          if (JSON.stringify(this.model[f.name]) != JSON.stringify(this.newModel[f.name])) {
+          if (this.model[f.name] == null) {
+            if (this.newModel[f.name]) {
+              return true
+            }
+          } else if (this.model[f.name] != this.newModel[f.name]) {
             return true
           }
         }
@@ -343,9 +377,19 @@ export default {
       }
       var transitions = []
       for (const t of this.stateConfig.transitions) {
-        if (this.userIsActor(t.actor)) {
-          transitions.push(t)
+        var canTransite = false
+        if (!t.permissions) {
+          continue
         }
+        for (const p of t.permissions) {
+          if (this.userIsActor(p) && this.isConditionSatisfied(p)) {
+            canTransite = true
+            break
+          }
+        }
+        if (canTransite) {
+          transitions.push(t)
+        }        
       }
       return transitions
     },
@@ -497,6 +541,35 @@ export default {
             }
           }
         }
+      }
+      return false
+    },
+    isConditionSatisfied (c) {
+      var conditionField = c.conditionField
+      if (!conditionField) {
+        return true
+      }
+      if (!this.newModel) {
+        return false
+      }
+      var conditionFieldValue = Number(this.newModel[conditionField])
+      return this.isNumberConditionSatisfied(conditionFieldValue, c.conditionOperator, c.conditionOperand)
+    },
+    isNumberConditionSatisfied (v, operator, operand) {
+      if (operator == '<') {
+        return v < operand
+      }
+      if (operator == '<=') {
+        return v <= operand
+      }
+      if (operator == '==') {
+        return v == operand
+      }
+      if (operator == '>=') {
+        return v >= operand
+      }
+      if (operator == '>') {
+        return v > operand
       }
       return false
     },

@@ -15,7 +15,7 @@
         <tr>
           <th>To State</th>
           <th>Button Label</th>
-          <th>Actor</th>
+          <!--<th>Actor</th>-->
         </tr>
       </thead>
       <tbody>
@@ -24,14 +24,14 @@
           <td>
             {{t.actionLabel}}
           </td>
-          <td>
+          <!--<td>
             <div v-for="(g, i) in t.actor.groups" :key="stateName + '-t-t-p-g-' + i">
               <span class="tag" >{{g}}</span>&nbsp;
             </div>
             <div v-for="(g, i) in t.actor.others" :key="stateName + '-t-t-p-o-' + i">
               <span class="tag" >{{g}}</span>&nbsp;
             </div>
-          </td>
+          </td>-->
         </tr>
       </tbody>
     </table>

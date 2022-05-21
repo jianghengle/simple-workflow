@@ -153,6 +153,8 @@ export default {
         || this.model.userGroup != this.newModel.userGroup
         || JSON.stringify(this.model.fields) != JSON.stringify(this.newModel.fields)
         || JSON.stringify(this.model.states) != JSON.stringify(this.newModel.states)
+        || JSON.stringify(this.model.creationNotifyingGroups) != JSON.stringify(this.newModel.creationNotifyingGroups)
+        || JSON.stringify(this.model.creationNotifyingOthers) != JSON.stringify(this.newModel.creationNotifyingOthers)
     },
   },
   methods: {

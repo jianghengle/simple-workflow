@@ -24,12 +24,16 @@
           </div>
 
           <div class="navbar-end">
-            <div class="navbar-item has-dropdown is-hoverable" v-if="orgIds">
-              <router-link class="navbar-link" :to="'/user/edit'">
-                <span class="icon">
-                  <i class="fas fa-user"></i>
-                </span>
-              </router-link>
+            <router-link class="navbar-item" v-if="token" :to="'/user/edit'">
+              <span class="icon">
+                <i class="fas fa-user"></i>
+              </span>
+            </router-link>
+
+            <div class="navbar-item has-dropdown is-hoverable" v-if="orgIds && orgIds.length > 1">
+              <a class="navbar-link">
+                Orgs
+              </a>
 
               <div class="navbar-dropdown">
                 <router-link class="navbar-item" v-for="(orgId, i) in orgIds" :key="'h-m-d-' + i" :to="'/org/' + orgId + '/workflow-configs'">

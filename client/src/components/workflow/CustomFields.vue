@@ -17,7 +17,7 @@
           <th>Name</th>
           <th>Label</th>
           <th>Type</th>
-          <th>Options</th>
+          <!--<th>Options</th>-->
           <th>Dashboard</th>
         </tr>
       </thead>
@@ -27,7 +27,7 @@
           <td>{{f.name}}</td>
           <td>{{f.label}}</td>
           <td>{{f.type}}</td>
-          <td>
+          <!--<td>
             <div v-if="f.options">
               <div v-if="Array.isArray(f.options)">
                 <div v-for="(o, j) in f.options" :key="'f-r-' + i + '-' + j">
@@ -43,7 +43,7 @@
                 <span>{{f.options}}</span>
               </div>
             </div>
-          </td>
+          </td>-->
           <td>{{f.dashboard}}</td>
         </tr>
       </tbody>

@@ -1,4 +1,5 @@
 import simplejson as json
+from decimal import Decimal
 import base64
 from . import MyError
 from .models.user_model import UserModel
@@ -13,7 +14,7 @@ class MyReq:
 
         self.body = event.get('body', None)
         if self.body:
-            self.body = json.loads(self.body)
+            self.body = json.loads(self.body, parse_float=Decimal)
         self.headers = event.get('headers', {})
         self.queryStringParameters = event.get('queryStringParameters', {})
         self.requestContext = event.get('requestContext', None)

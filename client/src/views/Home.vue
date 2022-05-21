@@ -11,7 +11,7 @@
           <div v-if="orgIds.length">
             <article class="message is-success">
               <div class="message-body">
-                You will be directed to your org page shortly...
+                You will be directed to your org page shortly... but please refresh or sign in again if not.
               </div>
             </article>
           </div>

@@ -4,15 +4,15 @@
     <div class="modal-background"></div>
     <div class="modal-card">
       <header class="modal-card-head">
-        <p class="modal-card-title">New Transition</p>
+        <p class="modal-card-title">Edit Transition</p>
         <button class="delete" @click="close"></button>
       </header>
       <section class="modal-card-body" v-if="localModel">
         <string-field :label="'From State'" :value="stateName" :readonly="true" :options="stateNames" />
         <string-field :name="'toState'" :label="'To State'" :value="localModel.toState" @value-changed="onValueChanged" :options="toStateOptions" />
         <string-field :name="'actionLabel'" :label="'Action Label'" :value="localModel.actionLabel" @value-changed="onValueChanged" />
-        <strings-field :name="'groups'" :label="'Actor Groups'" :value="localModel.actor.groups" @value-changed="onPermissionValueChanged" :options="groupOptions" />
-        <strings-field :name="'others'" :label="'Actor Others'" :value="localModel.actor.others" @value-changed="onPermissionValueChanged" :options="otherOptions" />
+
+        <items-field :name="'permissions'" :label="'Permissions'" :value="localModel.permissions" :fields="permissionFields" @value-changed="onValueChanged" />
       </section>
       <footer class="modal-card-foot">
         <a class="button is-link" :disabled="!canSave" @click="save">Save</a>
@@ -26,17 +26,19 @@
 <script>
 import StringField from '@/components/form/StringField'
 import StringsField from '@/components/form/StringsField'
+import ItemsField from '@/components/form/ItemsField'
 
 export default {
   name: 'transition-modal',
   components: {
     StringField,
     StringsField,
+    ItemsField
   },
   props: ['opened', 'fields', 'stateName', 'stateNames', 'model'],
   data () {
     return {
-      localModel: null
+      localModel: null,
     }
   },
   computed: {
@@ -72,6 +74,19 @@ export default {
     },
     toStateOptions () {
       return this.stateNames.filter(n => n != this.stateName)
+    },
+    numberFields () {
+      var fieldNames = this.fields.filter(f => f.type == 'number').map(f => f.name)
+      return fieldNames
+    },
+    permissionFields () {
+      return [
+        {name: 'groups', label: 'Groups', type: 'strings', optionValues: this.groupOptions},
+        {name: 'others', label: 'Others', type: 'strings', optionValues: this.otherOptions},
+        {name: 'conditionField', label: 'Condition Field', type: 'string', optionValues: this.numberFields},
+        {name: 'conditionOperator', label: 'Condition Operator', type: 'string', options: ['<', '<=', '==', '>=', '>']},
+        {name: 'conditionOperand', label: 'Condition Operand', type: 'number'},
+      ]
     },
   },
   watch: {
