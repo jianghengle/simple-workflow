@@ -4,7 +4,7 @@
       <string-field v-if="f.type == 'string'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly" @value-changed="onValueChanged" :options="f.optionValues" />
       <strings-field v-if="f.type == 'strings'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly" @value-changed="onValueChanged" :options="f.optionValues" />
       <textarea-field v-if="f.type == 'textarea'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
-      <number-field v-if="f.type == 'number'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
+      <number-field v-if="f.type == 'number'" v-show="!f.linkedFrom" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
       <checkbox-field v-if="f.type == 'checkbox'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
       <file-field v-if="f.type == 'file'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
       <files-field v-if="f.type == 'files'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
@@ -168,12 +168,37 @@ export default {
       var name = val[0]
       var value = JSON.parse(JSON.stringify(val[1]))
       this.localModel[name] = value
+      var changedField = null
       for (const f of this.fields) {
-        if ((f.type == 'string' || f.type == 'number') && (f.linkedFrom == name) && this.isFieldEditable(f)) {
-          for (const v of f.linkedValues) {
-            if (value == v['From']) {
-              this.localModel[f.name] = v['To']
+        if (f.name == name) {
+          changedField = f
+        }
+      }
+      if (!changedField) {
+        return
+      }
+      for (const f of this.fields) {
+        if (changedField.type == 'items') {
+          if (f.type == 'number' && f.linkedFrom.startsWith(name + '.') && this.isFieldEditable(f)) {
+            var firstDot = f.linkedFrom.indexOf('.')
+            var lastDot = f.linkedFrom.lastIndexOf('.')
+            var itemFieldName = f.linkedFrom.substring(firstDot + 1, lastDot)
+            var sum = 0
+            for (const item of value) {
+              sum += Number(item[itemFieldName])
             }
+            this.localModel[f.name] = sum
+          }
+        } else {
+          if (f.type == 'string' && f.linkedFrom == name && this.isFieldEditable(f)) {
+            for (const v of f.linkedValues) {
+              if (value == v['From']) {
+                this.localModel[f.name] = v['To']
+              }
+            }
+          }
+          if (f.type == 'number' && f.linkedFrom == name && this.isFieldEditable(f)) {
+            this.localModel[f.name] = value
           }
         }
       }

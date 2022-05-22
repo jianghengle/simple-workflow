@@ -62,10 +62,13 @@
           <custom-item-fields :model="model.itemFields" :linkedFromOptions="linkedFromOptions" @model-changed="onValueChanged" />
         </div>
 
-        <string-field v-if="(model.type == 'string' || model.type == 'number') && linkedFromOptions && linkedFromOptions.length > 1"
+        <string-field v-if="model.type == 'string' && linkedFromOptions && linkedFromOptions.length > 1"
           :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="linkedFromOptions" @value-changed="onValueChanged" />
 
-        <sheet-field v-if="(model.type == 'string' || model.type == 'number') && linkedFromOptions && linkedFromOptions.length > 1 && model.linkedFrom" :name="'linkedValues'" :label="'Auto Fill Values'" :columns="['From', 'To']" :value="model.linkedValues"  @value-changed="onValueChanged" />
+        <sheet-field v-if="model.type == 'string' && linkedFromOptions && linkedFromOptions.length > 1 && model.linkedFrom" :name="'linkedValues'" :label="'Auto Fill Values'" :columns="['From', 'To']" :value="model.linkedValues"  @value-changed="onValueChanged" />
+
+        <string-field v-if="(model.type == 'number') && numberLinkedFromOptions && numberLinkedFromOptions.length > 1"
+          :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="numberLinkedFromOptions" @value-changed="onValueChanged" />
 
         <checkbox-field v-if="(model.type == 'string' || model.type == 'number')"  :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
 
@@ -99,7 +102,7 @@ export default {
     ItemsField,
     CustomItemFields
   },
-  props: ['opened', 'field', 'index', 'linkedFromOptions'],
+  props: ['opened', 'field', 'index', 'linkedFromOptions', 'numberLinkedFromOptions'],
   data () {
     return {
       model: {

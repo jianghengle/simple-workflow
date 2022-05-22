@@ -95,7 +95,7 @@ export default {
     },
     localValue: function (val) {
       if (!this.readonly) {
-        this.$emit('value-changed', [this.name, this.localValue])
+        this.$emit('value-changed', [this.name, JSON.parse(JSON.stringify(this.localValue))])
       }
     },
   },
