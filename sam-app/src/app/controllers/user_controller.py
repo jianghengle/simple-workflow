@@ -14,7 +14,8 @@ def get_user(req):
     }
 
 def update_username(req):
-    user = req.user.update_username(req.body['username'])
+    user = UserModel.get_by_token(req.token)
+    user = user.update_username(req.body['username'])
     try:
         for org_id in user.orgIds:
             org = OrgModel.get_by_id(org_id)
@@ -30,6 +31,22 @@ def update_username(req):
         'orgIds': user.orgIds,
     }
 
+def request_to_join_org(req):
+    org_id = req.body['orgId']
+    org = OrgModel.get_by_id(org_id)
+    if not org:
+        raise MyError('The org id does NOT exist.', 403)
+    email = req.body['email']
+    org_user = OrgUserModel.get_by_email(org.data, email)
+    if org_user:
+        if org_user.role == 'Pending Approval':
+            raise MyError('You have requested the org. The admin is reviewing your request.', 403)
+        else:
+            raise MyError('You are already in the org. If you have not set your password, you want to ask the admin to send you the invition link.', 403)
+    data = {'email': req.body['email'], 'username': req.body['username'], 'role': 'Pending Approval'}
+    new_org_user = OrgUserModel.create(org.data, data)
+    return {'ok': True}
+
 def generate_password_reset_token(req):
     email = req.body['email']
     user = UserModel.generate_password_reset_token(email)
@@ -41,13 +58,15 @@ def generate_password_reset_token(req):
     return {'ok': True}
 
 def send_invite(req):
+    if (not req.org_user) or (not req.org_user.is_admin()):
+        raise MyError('You are not admin', 403)
     email = req.body['email']
     user = UserModel.get_by_email(email)
     if user.encryptedPassword:
         raise MyError('User has been activated.')
     user = UserModel.generate_password_reset_token(email)
     password_reset_link = 'https://myworkflowhub.com/user/change-password/' +  quote(user.email, safe='') + '/' + user.resetPasswordToken + '/new'
-    request_user = str(req.user.username) + '<' + req.user.email + '>'
+    request_user = str(req.org_user.username) + '<' + req.org_user.email + '>'
     org = OrgModel.get_by_id(req.org_info['id'])
     org_name = org.name
     body_text = INVITE_TEXT.format(request_user, org_name, password_reset_link)

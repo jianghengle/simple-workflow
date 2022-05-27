@@ -175,6 +175,7 @@ export default {
     },
     signoutConfirmed () {
       delete Vue.http.headers.common['Authorization']
+      delete Vue.http.headers.common['My-Org-Info']
       this.$store.commit('user/reset')
       this.$store.commit('org/setOrg', null)
       this.$store.commit('org/setOrgUsers', [])

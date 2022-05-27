@@ -67,7 +67,10 @@ class UserModel(Model):
     @staticmethod
     def auth_user(email, password):
         table = dynamo_service.get_table(UserModel.TableName)
-        user = UserModel(dynamo_service.get_item(table, 'email', email))
+        item = dynamo_service.get_item(table, 'email', email)
+        if not item:
+            raise MyError('The user does not exist.', 403)
+        user = UserModel(item)
         if not user.encryptedPassword:
             raise MyError('Password not set.', 403)
         if bcrypt.checkpw(password.encode('utf-8'), user.encryptedPassword.encode('utf-8')):

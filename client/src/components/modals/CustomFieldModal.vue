@@ -70,9 +70,9 @@
         <string-field v-if="(model.type == 'number') && numberLinkedFromOptions && numberLinkedFromOptions.length > 1"
           :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="numberLinkedFromOptions" @value-changed="onValueChanged" />
 
-        <checkbox-field v-if="(model.type == 'string' || model.type == 'number')"  :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
+        <number-field v-if="(model.type == 'string' || model.type == 'number')"  :name="'dashboard'" :label="'Dashboard Index (0 means Not-Show)'" :value="model.dashboard" @value-changed="onValueChanged" />
 
-        <checkbox-field v-if="(model.dashboard || model.type == 'number')"  :name="'twoDigits'" :label="'Number in Dashboard'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
+        <checkbox-field v-if="(model.dashboard > 0 && model.type == 'number')"  :name="'twoDigits'" :label="'Number in Dashboard'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
 
       </section>
       <footer class="modal-card-foot">
@@ -91,6 +91,7 @@ import CheckboxField from '@/components/form/CheckboxField'
 import SheetField from '@/components/form/SheetField'
 import ItemsField from '@/components/form/ItemsField'
 import CustomItemFields from '@/components/workflow/CustomItemFields'
+import NumberField from '@/components/form/NumberField'
 
 export default {
   name: 'custom-field-modal',
@@ -100,7 +101,8 @@ export default {
     CheckboxField,
     SheetField,
     ItemsField,
-    CustomItemFields
+    CustomItemFields,
+    NumberField
   },
   props: ['opened', 'field', 'index', 'linkedFromOptions', 'numberLinkedFromOptions'],
   data () {
@@ -114,7 +116,7 @@ export default {
         itemFields: [],
         linkedFrom: '',
         linkedValues: [],
-        dashboard: true,
+        dashboard: 0,
         twoDigits: true,
       },
       typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'sheet', 'items'],
@@ -219,7 +221,7 @@ export default {
         }
       }
       if (this.model.type != 'string' && this.model.type != 'number') {
-        this.model.dashboard = false
+        this.model.dashboard = 0
       }
       this.$emit('custom-field-modal-saved', [this.index, this.model])
     },

@@ -3,6 +3,7 @@ from decimal import Decimal
 import base64
 from . import MyError
 from .models.user_model import UserModel
+from .models.org_user_model import OrgUserModel
 
 
 class MyReq:
@@ -19,15 +20,21 @@ class MyReq:
         self.queryStringParameters = event.get('queryStringParameters', {})
         self.requestContext = event.get('requestContext', None)
         self.user = None
-
-        token = self.headers.get('Authorization', None)
-        if self.method != 'OPTIONS' and token:
-            self.user = UserModel.get_by_token(token)
+        self.org_user = None
+        self.token = None
 
         org_header = self.headers.get('my-org-info', None) or self.headers.get('My-Org-Info', None)
         if self.method != 'OPTIONS' and org_header:
             org_info_str = base64.b64decode(org_header.encode('utf-8')).decode('utf-8')
             self.org_info = json.loads(org_info_str)
+            if self.org_info.get('orgUserToken', None):
+                self.org_user = OrgUserModel.get_by_token(self.org_info)
+
+        token = self.headers.get('Authorization', None)
+        if self.method != 'OPTIONS' and token:
+            self.token = token
+            if not self.org_user:
+                self.user = UserModel.get_by_token(token)
 
 
 def MyResp(data=None, code=200):

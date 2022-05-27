@@ -11,7 +11,7 @@
           <div v-if="orgIds.length">
             <article class="message is-success">
               <div class="message-body">
-                You will be directed to your org page shortly... but please refresh or sign in again if not.
+                You should be directed to your org page shortly... but if not please manually refresh page or sign in again.
               </div>
             </article>
           </div>
@@ -75,6 +75,11 @@
         <div>
           <router-link :to="'/user/forgot-password'">
             Forgot your password?
+          </router-link>
+        </div>
+        <div class="mt-1">
+          <router-link :to="'/user/request-to-join-org'">
+            Request to join Org?
           </router-link>
         </div>
       </div>

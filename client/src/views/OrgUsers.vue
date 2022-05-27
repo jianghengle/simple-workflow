@@ -15,9 +15,9 @@
       </div>
       <div v-else>
         <div v-if="!isAdmin">
-          <div class="message-body">
-            You are not allowed to view this page
-          </div>
+          <span class="icon is-medium is-size-4">
+            <i class="fas fa-spinner fa-pulse"></i>
+          </span>
         </div>
         <div v-else>
           <div class="my-title-section">
@@ -67,7 +67,7 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Username</th>
+                  <th>Full Name</th>
                   <th>Email</th>
                   <th>Role</th>
                   <th>Groups</th>
@@ -86,11 +86,17 @@
                     </span>
                   </td>
                   <td class="has-text-centered">
-                    <span v-if="user.activated">Yes</span>
+                    <span v-if="user.role == 'Pending Approval'">
+                      <a class="button mr-2" :class="{'is-loading': processing}" @click.stop="approveRequest(user)">Approve</a>
+                      <a class="button" :class="{'is-loading': processing}" @click.stop="rejectRequest(user)">Reject</a>
+                    </span>
                     <span v-else>
-                      <span v-if="sent[user.email]" class="has-text-success">Invitation Sent</span>
+                      <span v-if="user.activated">Yes</span>
                       <span v-else>
-                        <a class="button" :class="{'is-loading': sending[user.email]}" @click.stop="sendInvitation(user)">Send Invitation</a>
+                        <span v-if="sent[user.email]" class="has-text-success">Activation Email Sent</span>
+                        <span v-else>
+                          <a class="button" :class="{'is-loading': sending[user.email]}" @click.stop="sendInvitation(user)">Send Activation Email</a>
+                        </span>
                       </span>
                     </span>
                   </td>
@@ -135,6 +141,7 @@ export default {
       seletedGroup: 'All',
       sending: {},
       sent: {},
+      processing: false,
     }
   },
   computed: {
@@ -151,7 +158,18 @@ export default {
       return this.$store.state.org.org
     },
     orgUsers () {
-      return this.$store.state.org.orgUsers
+      if (!this.$store.state.org.orgUsers) {
+        return null
+      }
+      return this.$store.state.org.orgUsers.sort((a, b) => {
+        var roles = ['Owner', 'Admin', 'User', 'Pending Approval']
+        var aRoleIndex = roles.indexOf(a.role)
+        var bRoleIndex = roles.indexOf(b.role)
+        if (aRoleIndex == bRoleIndex) {
+          return a.email.localeCompare(b.email)
+        }
+        return aRoleIndex - bRoleIndex
+      })
     },
     orgUser () {
       if (!this.email || !this.orgUsers) {
@@ -194,6 +212,9 @@ export default {
   },
   methods: {
     openUserModal (orgUser) {
+      if (orgUser.role == 'Pending Approval') {
+        return
+      }
       this.orgUserModal.orgUser = orgUser
       this.orgUserModal.opened = true
     },
@@ -219,6 +240,59 @@ export default {
         this.$set(this.sending, user.email, false)
         this.error = err
         this.sending = false
+      })
+    },
+    approveRequest (user) {
+      if (this.processing) {
+        return
+      }
+      var confirm = {
+        title: 'Approve Org User',
+        message: 'Are you sure to APPROVE this org user: ' + user.email + ' to join our org?',
+        button: 'Yes, I am sure.',
+        callback: {
+          context: this,
+          method: this.approveRequestConfirmed,
+          args: [user]
+        }
+      }
+      this.$store.commit('modals/openConfirmModal', confirm)
+    },
+    approveRequestConfirmed (user) {
+      this.processing = true
+      this.$http.post(this.server + '/org/approve-org-user', user).then(resp => {
+        var orgUser = resp.body
+        this.$store.commit('org/updateOrgUser', orgUser)
+        this.processing = false
+      }, err => {
+        this.error = err
+        this.processing = false
+      })
+    },
+    rejectRequest (user) {
+      if (this.processing) {
+        return
+      }
+      var confirm = {
+        title: 'Reject Org User',
+        message: 'Are you sure to REJECT this org user: ' + user.email + ' to join our org?',
+        button: 'Yes, I am sure.',
+        callback: {
+          context: this,
+          method: this.rejectRequestConfirmed,
+          args: [user]
+        }
+      }
+      this.$store.commit('modals/openConfirmModal', confirm)
+    },
+    rejectRequestConfirmed (user) {
+      this.processing = true
+      this.$http.post(this.server + '/org/reject-org-user', user).then(resp => {
+        this.$store.commit('org/deleteOrgUser', user.email)
+        this.processing = false
+      }, err => {
+        this.error = err
+        this.processing = false
       })
     },
   },

@@ -13,9 +13,9 @@
       </div>
       <div v-else>
         <div v-if="!canAccess">
-          <div class="message-body">
-            You are not allowed to access this page
-          </div>
+          <span class="icon is-medium is-size-4">
+            <i class="fas fa-spinner fa-pulse"></i>
+          </span>
         </div>
         <div v-else>
           <workflows />

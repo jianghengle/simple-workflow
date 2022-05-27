@@ -13,9 +13,9 @@
       </div>
       <div v-else>
         <div v-if="!canAccess">
-          <div class="message-body">
-            You are not allowed to access this page
-          </div>
+          <span class="icon is-medium is-size-4">
+            <i class="fas fa-spinner fa-pulse"></i>
+          </span>
         </div>
         <div v-else>
           <div class="mt-3">
@@ -161,7 +161,7 @@ export default {
   methods: {
     getWorkflow () {
       this.waiting = true
-      this.$http.get(this.server + '/org/get-workflow/' + this.configId + '/' + this.copyFrom).then(resp => {
+      this.$http.post(this.server + '/org/get-workflow/' + this.configId + '/' + this.copyFrom + '/', this.orgWorkflowConfig).then(resp => {
         var model = resp.body
         model.state = this.firstStateName
         model.createdBy = this.email
@@ -243,7 +243,9 @@ export default {
   },
   mounted () {
     if (this.copyFrom != 'new') {
-      this.getWorkflow(this.copyFrom)
+      this.$nextTick(function () {
+        this.getWorkflow(this.copyFrom)
+      })
     } else {
       if (this.orgWorkflowConfig) {
         var model = {}

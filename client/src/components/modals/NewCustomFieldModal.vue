@@ -9,7 +9,7 @@
       </header>
       <section class="modal-card-body">
 
-        <string-field v-if="insertOptions.length" :label="'Insert After'" :value="insertAfter" :options="insertOptions" @value-changed="onInsertAfterChanged" />
+        <string-field v-if="insertOptions.length" :label="'Insert'" :value="insertAfter" :options="insertOptions" @value-changed="onInsertAfterChanged" />
 
         <string-field :name="'name'" :label="'Name'" :value="model.name" @value-changed="onValueChanged" :constraints="nameConstraints" />
         <string-field :name="'label'" :label="'Label'" :value="model.label" @value-changed="onValueChanged" />
@@ -19,13 +19,13 @@
           <label class="label">Options</label>
           <div class="control">
             <label class="radio">
-              <input type="radio" name="optionsMode" value="NoOptions" v-model="optionsMode">
+              <input type="radio" value="NoOptions" v-model="optionsMode">
               No Options
             </label>
           </div>
           <div class="control">
             <label class="radio">
-              <input type="radio" name="optionsMode" value="Fixed" v-model="optionsMode">
+              <input type="radio" value="Fixed" v-model="optionsMode">
               Fixed
             </label>
           </div>
@@ -34,7 +34,7 @@
           </div>
           <div class="control">
             <label class="radio">
-              <input type="radio" name="optionsMode" value="Deprived" v-model="optionsMode">
+              <input type="radio" value="Deprived" v-model="optionsMode">
               Deprived
             </label>
           </div>
@@ -44,7 +44,7 @@
           </div>
           <div class="control">
             <label class="radio">
-              <input type="radio" name="optionsMode" value="OrgUsers" v-model="optionsMode">
+              <input type="radio" value="OrgUsers" v-model="optionsMode">
               Org Users
             </label>
           </div>
@@ -72,9 +72,9 @@
         <string-field v-if="model.type == 'number' && numberLinkedFromOptions && numberLinkedFromOptions.length > 1"
           :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="numberLinkedFromOptions" @value-changed="onValueChanged" />
 
-        <checkbox-field v-if="(model.type == 'string' || model.type == 'number')" :name="'dashboard'" :label="'Dashboard'" :inlineLabel="'Show'" :value="model.dashboard" @value-changed="onValueChanged" />
+        <number-field v-if="(model.type == 'string' || model.type == 'number')" :name="'dashboard'" :label="'Dashboard Index (0 means Not-Show)'" :value="model.dashboard" @value-changed="onValueChanged" />
 
-        <checkbox-field v-if="(model.dashboard || model.type == 'number')"  :name="'twoDigits'" :label="'Number in Dashboard'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
+        <checkbox-field v-if="(model.dashboard > 0 && model.type == 'number')"  :name="'twoDigits'" :label="'Number in Dashboard'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
 
       </section>
       <footer class="modal-card-foot">
@@ -92,6 +92,7 @@ import CheckboxField from '@/components/form/CheckboxField'
 import SheetField from '@/components/form/SheetField'
 import ItemsField from '@/components/form/ItemsField'
 import CustomItemFields from '@/components/workflow/CustomItemFields'
+import NumberField from '@/components/form/NumberField'
 
 export default {
   name: 'new-custom-field-modal',
@@ -101,7 +102,8 @@ export default {
     CheckboxField,
     SheetField,
     ItemsField,
-    CustomItemFields
+    CustomItemFields,
+    NumberField
   },
   props: ['opened', 'insertOptions', 'linkedFromOptions', 'numberLinkedFromOptions'],
   data () {
@@ -115,7 +117,7 @@ export default {
         itemFields: [],
         linkedFrom: '',
         linkedValues: [],
-        dashboard: true,
+        dashboard: 0,
         twoDigits: true,
       },
       typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'sheet', 'items'],
@@ -165,7 +167,8 @@ export default {
     opened: function (val) {
       if (val) {
         this.model.linkedFrom = ''
-        this.insertAfter = this.insertOptions.length - 1
+        this.optionsMode = 'NoOptions'
+        this.insertAfter = this.insertOptions.length - 2
       }
     }
   },
@@ -197,7 +200,7 @@ export default {
         }
       }
       if (this.model.type != 'string' && this.model.type != 'number') {
-        this.model.dashboard = false
+        this.model.dashboard = 0
       }
       this.$emit('new-custom-field-modal-saved', [this.insertAfter, this.model])
     },

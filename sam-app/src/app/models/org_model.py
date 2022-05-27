@@ -11,7 +11,10 @@ class OrgModel(Model):
     @staticmethod
     def get_by_id(id):
         table = dynamo_service.get_table(OrgModel.TableName)
-        return OrgModel(dynamo_service.get_item(table, 'id', id))
+        item = dynamo_service.get_item(table, 'id', id)
+        if item:
+            return OrgModel(item)
+        return None
 
     @staticmethod
     def update(id, data):

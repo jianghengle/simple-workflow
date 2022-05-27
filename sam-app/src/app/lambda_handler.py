@@ -22,7 +22,7 @@ class MyRouter:
                 continue
             (match, params) = self.path_match(req_path_parts, self.split_path(path))
             if match:
-                if auth_required and (not req.user):
+                if auth_required and (not req.user) and (not req.org_user):
                     raise MyError('Failed to authenticate the user', 403)
                 return MyResp(handler(req, *params))
         raise MyError('Did not find the handler', 404)
@@ -56,6 +56,7 @@ def handle(event, context):
         router = MyRouter([
             ('GET', '/user/get-user', True, user_controller.get_user),
             ('POST', '/user/update-username', True, user_controller.update_username),
+            ('POST', '/user/request-to-join-org', False, user_controller.request_to_join_org),
             ('POST', '/user/generate-password-reset-token', False, user_controller.generate_password_reset_token),
             ('POST', '/user/send-invite', True, user_controller.send_invite),
             ('POST', '/user/reset-password', False, user_controller.reset_password),
@@ -66,13 +67,15 @@ def handle(event, context):
             ('POST', '/org/create-org-user', True, org_controller.create_org_user),
             ('POST', '/org/update-org-user', True, org_controller.update_org_user),
             ('POST', '/org/delete-org-user', True, org_controller.delete_org_user),
+            ('POST', '/org/approve-org-user', True, org_controller.approve_org_user),
+            ('POST', '/org/reject-org-user', True, org_controller.reject_org_user),
             ('GET', '/org/get-org-workflow-configs', True, org_controller.get_org_workflow_configs),
             ('POST', '/org/create-workflow-config', True, org_controller.create_workflow_config),
             ('POST', '/org/update-workflow-config/:id', True, org_controller.update_workflow_config),
             ('GET', '/org/get-org-workflow-config/:id', True, org_controller.get_workflow_config),
             ('POST', '/org/delete-workflow-config/:id', True, org_controller.delete_workflow_config),
-            ('GET', '/org/get-org-workflows-in-folder/:folder_id', True, workflow_controller.get_workflows_in_folder),
-            ('GET', '/org/get-workflow/:config_id/:workflow_id', True, workflow_controller.get_workflow),
+            ('POST', '/org/get-org-workflows-in-folder/:folder_id', True, workflow_controller.get_workflows_in_folder),
+            ('POST', '/org/get-workflow/:config_id/:workflow_id', True, workflow_controller.get_workflow),
             ('POST', '/org/create-workflow', True, workflow_controller.create_workflow),
             ('POST', '/org/update-workflow', True, workflow_controller.update_workflow),
             ('POST', '/org/delete-workflow', True, workflow_controller.delete_workflow),

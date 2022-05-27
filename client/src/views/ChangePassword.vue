@@ -17,9 +17,9 @@
          </div>
       </div>
       <div class="field" v-if="mode == 'new'">
-         <label class="label">Username</label>
+         <label class="label">Full Name</label>
          <div class="control has-icons-left has-icons-right">
-            <input class="input" type="email" placeholder="Username" v-model="username">
+            <input class="input" type="email" placeholder="Full name" v-model="username">
             <span class="icon is-small is-left">
                <i class="fas fa-user"></i>
             </span>

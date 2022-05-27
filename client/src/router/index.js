@@ -16,6 +16,11 @@ const routes = [
     component: () => import('../views/UserEdit.vue')
   },
   {
+    path: '/user/request-to-join-org',
+    name: 'RequestToJoinOrg',
+    component: () => import('../views/RequestToJoinOrg.vue')
+  },
+  {
     path: '/user/forgot-password',
     name: 'ForgotPassword',
     component: () => import('../views/ForgotPassword.vue')

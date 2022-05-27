@@ -22,9 +22,9 @@
       </div>
       <div v-else>
         <div v-if="!canAccess">
-          <div class="message-body">
-            You are not allowed to access this page
-          </div>
+          <span class="icon is-medium is-size-4">
+            <i class="fas fa-spinner fa-pulse"></i>
+          </span>
         </div>
         <div v-else>
           <div class="mt-3">
@@ -405,6 +405,11 @@ export default {
         this.getWorkflow()
       }
     },
+    orgWorkflowConfig: function (val) {
+      if (val) {
+        this.getWorkflow()
+      }
+    },
   },
   methods: {
     getTransitionColor (stateName) {
@@ -412,8 +417,11 @@ export default {
       return color || '#485fc7'
     },
     getWorkflow () {
+      if (!this.orgWorkflowConfig) {
+        return
+      }
       this.waiting = true
-      this.$http.get(this.server + '/org/get-workflow/' + this.configId + '/' + this.workflowId + '/').then(resp => {
+      this.$http.post(this.server + '/org/get-workflow/' + this.configId + '/' + this.workflowId + '/', this.orgWorkflowConfig).then(resp => {
         this.model = resp.body
         this.waiting = false
       }, err => {

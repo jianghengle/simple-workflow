@@ -225,7 +225,9 @@ export default {
       if (!this.orgWorkflowConfig) {
         return []
       }
-      return this.orgWorkflowConfig.fields.filter(f => f.dashboard)
+      var dashboardFields = this.orgWorkflowConfig.fields.filter(f => f.dashboard)
+      dashboardFields.sort((a, b) => a.dashboard - b.dashboard)
+      return dashboardFields
     },
     parentFolders () {
       return []
@@ -297,7 +299,7 @@ export default {
   methods: {
     getWorkflowsInFolder () {
       this.waiting = true
-      this.$http.get(this.server + '/org/get-org-workflows-in-folder/' + this.folderId).then(resp => {
+      this.$http.post(this.server + '/org/get-org-workflows-in-folder/' + this.folderId + '/', this.orgWorkflowConfig).then(resp => {
         this.workflows = this.processWorkflows(resp.body)
         this.waiting = false
       }, err => {

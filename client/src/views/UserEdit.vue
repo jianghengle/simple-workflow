@@ -8,36 +8,64 @@
       </article>
     </div>
     <div v-else>
-      <div v-if="!orgIds">
-        <span class="icon is-medium is-size-4">
-          <i class="fas fa-spinner fa-pulse"></i>
+      <a class="button back-button" @click="$router.go(-1)">
+        <span class="icon back-icon">
+          <i class="fas fa-angle-left"></i>
         </span>
-      </div>
-      <div v-else>
+      </a>
+
+      <hr />
+
+      <h1 class="title is-4">Update Full Name</h1>
         
-        <string-field :name="'email'" :label="'Email'" :value="email" :readonly="true" />
+      <string-field :name="'email'" :label="'Email'" :value="email" :readonly="true" />
 
-        <string-field :name="'username'" :label="'Username'" :value="newUsername" @value-changed="onUsernameChanged" />
+      <string-field :name="'username'" :label="'Full Name'" :value="newUsername" @value-changed="onUsernameChanged" />
 
-        <div class="field is-grouped mt-5">
-          <p class="control">
-            <a class="button is-link" :disabled="!usernameChanged" :class="{'is-loading': waiting}" @click="save">
-              Update
-            </a>
-          </p>
-        </div>
-
-        <div v-if="error" class="notification is-danger is-light">
-          <button class="delete" @click="error=''"></button>
-          {{error}}
-        </div>
-
-        <div v-if="success" class="notification is-success is-light">
-          <button class="delete" @click="success=''"></button>
-          {{success}}
-        </div>
-
+      <div class="field is-grouped mt-5">
+        <p class="control">
+          <a class="button is-link" :disabled="!usernameChanged" :class="{'is-loading': waiting}" @click="save">
+            Update
+          </a>
+        </p>
       </div>
+
+      <div v-if="error" class="notification is-danger is-light">
+        <button class="delete" @click="error=''"></button>
+        {{error}}
+      </div>
+
+      <div v-if="success" class="notification is-success is-light">
+        <button class="delete" @click="success=''"></button>
+        {{success}}
+      </div>
+
+      <hr />
+
+      <h1 class="title is-4">Request to join org</h1>
+
+      <string-field :name="'orgId'" :label="'Org Id to request to join'" :value="newOrgId" @value-changed="onOrgIdChanged" />
+      <string-field :name="'email'" :label="'Email'" :value="email" :readonly="true" />
+      <string-field :name="'username'" :label="'Full Name'" :value="username" :readonly="true" />
+
+      <div class="field is-grouped mt-5">
+        <p class="control">
+          <a class="button is-link" :disabled="!newOrgId" :class="{'is-loading': waiting}" @click="request">
+            Request
+          </a>
+        </p>
+      </div>
+
+      <div v-if="requestError" class="notification is-danger is-light">
+        <button class="delete" @click="requestError=''"></button>
+        {{requestError}}
+      </div>
+
+      <div v-if="requestSuccess" class="notification is-success is-light">
+        <button class="delete" @click="requestSuccess=''"></button>
+        {{requestSuccess}}
+      </div>
+
     </div>
 
     
@@ -59,6 +87,9 @@ export default {
       success: '',
       waiting: false,
       newUsername: '',
+      newOrgId: '',
+      requestError: '',
+      requestSuccess: '',
     }
   },
   computed: {
@@ -76,9 +107,6 @@ export default {
     },
     usernameChanged () {
       return this.username != this.newUsername
-    },
-    orgIds () {
-      return this.$store.state.user.orgIds
     },
   },
   watch: {
@@ -102,6 +130,28 @@ export default {
         this.waiting = false
       }, err => {
         this.error = err
+        this.waiting = false
+      })
+    },
+    onOrgIdChanged (val) {
+      this.newOrgId = val[1]
+    },
+    request () {
+      if (this.waiting || !this.newOrgId) {
+        return
+      }
+      this.newOrgId = this.newOrgId.toLowerCase()
+      this.waiting = true
+      var message = {
+        orgId: this.newOrgId,
+        email: this.email,
+        username: this.username,
+      }
+      this.$http.post(this.server + '/user/request-to-join-org', message).then(resp => {
+        this.requestSuccess = 'Successfully sent the request. The org admin will review your request and get back to you.'
+        this.waiting = false
+      }, err => {
+        this.requestError = err.body.err
         this.waiting = false
       })
     },

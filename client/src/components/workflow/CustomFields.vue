@@ -18,7 +18,7 @@
           <th>Label</th>
           <th>Type</th>
           <!--<th>Options</th>-->
-          <th>Dashboard</th>
+          <th>Dashboard Index</th>
         </tr>
       </thead>
       <tbody>
@@ -111,7 +111,7 @@ export default {
       }
     },
     openNewCustomFieldModal () {
-      var options = []
+      var options = [{label: 'Before First', value: -1}]
       var linkedFromOptions = [{label: 'None', value: ''}]
       var numberLinkedFromOptions = [{label: 'None', value: ''}]
       for (var i=0;i<this.localModel.length;i++) {

@@ -139,13 +139,13 @@ export default {
     },
     availableConfigs () {
       if (!this.orgWorkflowConfigs) {
-        return []
+        return null
       }
       if (this.isAdmin) {
         return this.orgWorkflowConfigs
       }
       if (!this.orgUser) {
-        return []
+        return null
       }
       var configs = []
       for (const c of this.orgWorkflowConfigs) {

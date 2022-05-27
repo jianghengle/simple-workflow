@@ -14,7 +14,7 @@
           {{error}}
         </div>
 
-        <string-field :label="'Username'" :value="orgUser.username" :readonly="true" />
+        <string-field :label="'Full Name'" :value="orgUser.username" :readonly="true" />
         <string-field :label="'Email'" :value="orgUser.email" :readonly="true" />
 
         <string-field v-if="!isRoleEditable" :label="'Role'" :value="orgUser.role" :readonly="true" :options="['Owner', 'Admin', 'User']" />
