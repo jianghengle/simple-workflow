@@ -3,7 +3,7 @@
     <div class="field">
       <label class="label">{{label}}</label>
       <div class="control">
-        <textarea class="textarea" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly"></textarea>
+        <textarea class="textarea" :class="{'my-disbaled-field': readonly}" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly"></textarea>
       </div>
     </div>
   </div>
@@ -40,3 +40,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.my-disbaled-field {
+  -webkit-text-fill-color: #7a7a7a;
+  opacity: 1; /* required on iOS */
+}
+</style>>

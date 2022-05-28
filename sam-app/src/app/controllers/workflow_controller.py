@@ -32,6 +32,7 @@ def create_workflow(req):
     timestamp = int(time.time()*1000)
     data['createdAt'] = timestamp
     data['updatedAt'] = timestamp
+    data['updatedBy'] = req.org_user.email
     folder = OrgWorkflowFolderModel.get(req.org_info, data['folderId'])
     workflow_config = OrgWorkflowConfigModel.get(req.org_info, folder.workflowConfigId)
     data['id'] = str(workflow_config.increment_count(req.org_info))
@@ -44,6 +45,7 @@ def update_workflow(req):
     data = req.body
     timestamp = int(time.time()*1000)
     data['updatedAt'] = timestamp
+    data['updatedBy'] = req.org_user.email
     folder = OrgWorkflowFolderModel.get(req.org_info, data['folderId'])
     workflow_config = OrgWorkflowConfigModel.get(req.org_info, folder.workflowConfigId)
     workflow = WorkflowModel.update(req.org_info, workflow_config, data)

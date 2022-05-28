@@ -20,6 +20,7 @@ class MyReq:
         self.queryStringParameters = event.get('queryStringParameters', {})
         self.requestContext = event.get('requestContext', None)
         self.user = None
+        self.org_info = None
         self.org_user = None
         self.token = None
 
@@ -35,6 +36,8 @@ class MyReq:
             self.token = token
             if not self.org_user:
                 self.user = UserModel.get_by_token(token)
+                if self.user and self.org_info:
+                    self.org_user = OrgUserModel.get_by_email(self.org_info, self.user.email)
 
 
 def MyResp(data=None, code=200):

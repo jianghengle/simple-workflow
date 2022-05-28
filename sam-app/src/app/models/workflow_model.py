@@ -5,7 +5,7 @@ from .. import MyError
 
 
 class WorkflowModel:
-    CommonFields = ['id', 'folderId', 'state', 'createdBy', 'createdAt', 'updatedAt']
+    CommonFields = ['id', 'folderId', 'state', 'createdBy', 'createdAt', 'updatedAt', 'updatedBy']
 
     def __init__(self, workflow_config, data={}):
         self.data = {}

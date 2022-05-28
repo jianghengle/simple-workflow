@@ -601,11 +601,60 @@ export default {
       this.transiting = true
       this.$http.post(this.server + '/org/update-workflow', model).then(resp => {
         this.model = resp.body
+        this.sendNotification(resp.body, transition)
         this.transiting = false
       }, err => {
         this.error = err
         this.transiting = false
       })
+    },
+    sendNotification (workflow, transition) {
+      var emails = this.collectEmails(workflow, transition)
+      if (!emails.length) {
+        return
+      }
+      var message = {
+        workflowId: workflow.id,
+        workflowConfigId: this.orgWorkflowConfig.id,
+        receivers: emails,
+        additionalMessage: 'The workflow has transferred to ' + workflow.state,
+        workflowLink: window.location.origin + '/org/' + this.orgId + '/workflow/' + this.orgWorkflowConfig.id + '/' + workflow.id,
+      }
+      this.$http.post(this.server + '/org/send-email-about-workflow', message)
+    },
+    collectEmails (workflow, transition) {
+      var emails = []
+      if (transition.transitionNotifyingGroups && transition.transitionNotifyingGroups.length) {
+        for (const u of this.orgUsers) {
+          if (transition.transitionNotifyingGroups.includes('All')) {
+            emails.push(u.email)
+          } else {
+            for (const g of u.groups) {
+              if (transition.transitionNotifyingGroups.includes(g)) {
+                emails.push(u.email)
+              }
+            }
+          }
+        }
+      }
+      if (transition.transitionNotifyingOthers && transition.transitionNotifyingOthers.length) {
+        for (const o of transition.transitionNotifyingOthers) {
+          if (o == 'Workflow Creator') {
+            emails.push(this.email)
+          } else if(this.isValidateEmail(workflow[o])) {
+            emails.push(workflow[o])
+          }
+        }
+      }
+      return [...new Set(emails)]
+    },
+    isValidateEmail (email) {
+      if (!email) {
+        return false
+      }
+      return String(email)
+        .toLowerCase()
+        .match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
     },
     sendEmail () {
       this.sendEmailModal.opened = true

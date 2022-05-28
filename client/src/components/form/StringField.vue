@@ -9,7 +9,7 @@
           </a>
         </p>
         <div class="control" v-if="!options" :class="{'is-expanded': prefix}">
-          <input class="input" :class="{'is-danger': brokenConstraint}" type="text" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly">
+          <input class="input" :class="{'is-danger': brokenConstraint, 'my-disbaled-field': readonly}" type="text" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly">
         </div>
         <p class="help is-danger" v-if="brokenConstraint">{{brokenConstraint.info}}</p>
         <div class="control" v-if="options">
@@ -104,3 +104,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.my-disbaled-field {
+  -webkit-text-fill-color: #7a7a7a;
+  opacity: 1; /* required on iOS */
+}
+</style>>

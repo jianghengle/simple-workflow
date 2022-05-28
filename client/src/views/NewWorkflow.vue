@@ -152,8 +152,14 @@ export default {
       if (val && this.copyFrom == 'new') {
         var model = {}
         for(const field of val.fields) {
-          model[field.name] = null
+          if (field.defaultValue != null) {
+            model[field.name] = field.defaultValue
+          } else {
+            model[field.name] = null
+          }
         }
+        model.state = this.firstStateName
+        model.createdBy = this.email
         this.model = model
       }
     },
@@ -250,7 +256,11 @@ export default {
       if (this.orgWorkflowConfig) {
         var model = {}
         for(const field of this.orgWorkflowConfig.fields) {
-          model[field.name] = null
+          if (field.defaultValue != null) {
+            model[field.name] = field.defaultValue
+          } else {
+            model[field.name] = null
+          }
         }
         model.state = this.firstStateName
         model.createdBy = this.email

@@ -30,6 +30,12 @@
         </div>
       </div>
 
+      <div class="mt-4">
+        <router-link :to="'/'">
+          Back to sign in page
+        </router-link>
+      </div>
+
       <div v-if="error" class="notification is-danger is-light">
         <button class="delete" @click="error=''"></button>
         {{error}}
@@ -98,6 +104,13 @@ export default {
           /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         )
     },
+  },
+  mounted () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orgId = urlParams.get('orgid')
+    if (orgId) {
+      this.orgId = orgId
+    }
   },
 }
 </script>

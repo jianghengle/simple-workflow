@@ -13,6 +13,9 @@
         <string-field :name="'label'" :label="'Label'" :value="model.label" @value-changed="onValueChanged" />
         <string-field :name="'type'" :label="'Type'" :value="model.type" :options="typeOptions" @value-changed="onValueChanged" />
 
+        <string-field v-if="model.type == 'string'" :name="'defaultValue'" :label="'Default Value'" :value="model.defaultValue" @value-changed="onValueChanged" />
+        <number-field v-if="model.type == 'number'" :name="'defaultValue'" :label="'Default Value'" :value="model.defaultValue" @value-changed="onValueChanged" />
+
         <div class="field mt-4" v-if="model.type == 'string' || model.type == 'strings'">
           <label class="label">Options</label>
           <div class="control">
@@ -24,7 +27,7 @@
           <div class="control">
             <label class="radio">
               <input type="radio" name="optionsMode" value="Fixed" v-model="optionsMode">
-              Fixed
+              Static
             </label>
           </div>
           <div class="my-options" v-if="optionsMode == 'Fixed'">
@@ -33,7 +36,7 @@
           <div class="control">
             <label class="radio">
               <input type="radio" name="optionsMode" value="Deprived" v-model="optionsMode">
-              Deprived
+              Derived
             </label>
           </div>
           <div class="my-options" v-if="optionsMode == 'Deprived'">
@@ -118,6 +121,7 @@ export default {
         linkedValues: [],
         dashboard: 0,
         twoDigits: true,
+        defaultValue: null,
       },
       typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'sheet', 'items'],
       optionsMode: 'NoOptions',
@@ -132,8 +136,8 @@ export default {
         mappings: [],
       },
       optionsDeprivedMappingFields: [
-        {name: 'from', type: 'string', label: 'Deprived From'},
-        {name: 'deprivedOptions', type: 'strings', label: 'Deprived Options'},
+        {name: 'from', type: 'string', label: 'Derived From'},
+        {name: 'deprivedOptions', type: 'strings', label: 'Derived Options'},
       ],
     }
   },
@@ -190,6 +194,7 @@ export default {
         this.model.itemFields = this.field.itemFields
         this.model.linkedFrom = this.field.linkedFrom
         this.model.linkedValues = this.field.linkedValues ? JSON.parse(JSON.stringify(this.field.linkedValues)) : []
+        this.model.defaultValue = this.field.defaultValue
       }
     },
   },
@@ -222,6 +227,7 @@ export default {
       }
       if (this.model.type != 'string' && this.model.type != 'number') {
         this.model.dashboard = 0
+        this.model.defaultValue = null
       }
       this.$emit('custom-field-modal-saved', [this.index, this.model])
     },
