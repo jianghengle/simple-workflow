@@ -106,8 +106,5 @@ export default {
 </script>
 
 <style scoped>
-.my-disbaled-field {
-  -webkit-text-fill-color: #7a7a7a;
-  opacity: 1; /* required on iOS */
-}
+
 </style>>

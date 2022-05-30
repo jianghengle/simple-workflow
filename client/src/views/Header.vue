@@ -30,7 +30,7 @@
               </span>
             </router-link>
 
-            <div class="navbar-item has-dropdown is-hoverable" v-if="orgIds && orgIds.length > 1">
+            <div class="navbar-item has-dropdown is-hoverable" v-if="orgIds">
               <a class="navbar-link">
                 Orgs
               </a>
@@ -38,6 +38,10 @@
               <div class="navbar-dropdown">
                 <router-link class="navbar-item" v-for="(orgId, i) in orgIds" :key="'h-m-d-' + i" :to="'/org/' + orgId + '/workflow-configs'">
                   {{orgId}}
+                </router-link>
+                <hr class="navbar-divider" v-if="orgIds.length">
+                <router-link class="navbar-item" :to="'/user/request-to-join-org'">
+                  Request to Org
                 </router-link>
               </div>
             </div>

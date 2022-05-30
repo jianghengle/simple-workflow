@@ -13,20 +13,20 @@
       <div class="field">
         <label class="label">Your Email</label>
         <div class="control">
-          <input class="input" type="email" placeholder="Email" v-model="email">
+          <input class="input" :class="{'my-disbaled-field': token}" type="email" placeholder="Email" v-model="email" :readonly="token" :disabled="token">
         </div>
       </div>
 
       <div class="field">
         <label class="label">Your Full Name</label>
         <div class="control">
-          <input class="input" type="text" placeholder="Full Name" v-model="username">
+          <input class="input" :class="{'my-disbaled-field': token}" type="text" placeholder="Full Name" v-model="username" :readonly="token" :disabled="token">
         </div>
       </div>
 
       <div class="field is-grouped mt-5">
         <div class="control">
-          <button class="button is-link" :class="{'is-loading': waiting}" :disabled="!canRequest" @click="request">Request</button>
+          <a class="button is-link" :class="{'is-loading': waiting, 'my-disabled-button': !canRequest}" :disabled="!canRequest" @click="request">Request</a>
         </div>
       </div>
 
@@ -67,8 +67,25 @@ export default {
     server () {
       return this.$store.state.config.server
     },
+    token () {
+      return this.$store.state.user.token
+    },
+    userEmail () {
+      return this.$store.state.user.email
+    },
+    userUsername () {
+      return this.$store.state.user.username
+    },
     canRequest () {
       return this.orgId.trim() && this.username.trim() && this.isValidEmail(this.email)
+    },
+  },
+  watch: {
+    userEmail: function (val) {
+      this.email = val
+    },
+    userUsername: function (val) {
+      this.username = val
     },
   },
   methods: {
@@ -110,6 +127,10 @@ export default {
     const orgId = urlParams.get('orgid')
     if (orgId) {
       this.orgId = orgId
+    }
+    if (this.token) {
+      this.email = this.userEmail
+      this.username = this.userUsername
     }
   },
 }
