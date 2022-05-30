@@ -1,7 +1,12 @@
 import boto3
 from boto3.dynamodb.conditions import Key
 
+context_cache = {}
+
 def get_resource(role=None, region='us-west-2'):
+    cache_key = str(role) + '__' +region
+    if cache_key in context_cache:
+        return context_cache[cache_key]
     if role:
         sts_connection = boto3.client('sts')
         acct_b = sts_connection.assume_role(RoleArn=role, RoleSessionName='cross_acct_lambda')
@@ -19,6 +24,7 @@ def get_resource(role=None, region='us-west-2'):
         )
     else:
         resource = boto3.resource('dynamodb', region_name=region)
+    context_cache[cache_key] = resource
     return resource
 
 
@@ -35,8 +41,12 @@ def create_table(table_name, attribute_definitions, key_schema, global_secondary
 
 
 def get_table(table_name, role=None, region='us-west-2'):
+    cache_key = str(role) + '__' + region + '__' + table_name
+    if cache_key in context_cache:
+        return context_cache[cache_key]
     resource = get_resource(role, region)
     table = resource.Table(table_name)
+    context_cache[cache_key] = table
     return table
 
 
