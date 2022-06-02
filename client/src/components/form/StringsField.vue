@@ -44,6 +44,7 @@
           </a>
         </div>
       </div>
+      <p class="help is-info my-help-info" v-if="helpInfo">{{helpInfo}}</p>
     </div>
   </div>
 </template>
@@ -51,7 +52,7 @@
 <script>
 export default {
   name: 'strings-field',
-  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'options'],
+  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'options', 'helpInfo'],
   data () {
     return {
       localValue: null,
@@ -137,3 +138,9 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.my-help-info {
+  margin-top: -10px;
+}
+</style>

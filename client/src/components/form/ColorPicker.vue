@@ -7,6 +7,7 @@
         <swatches-picker v-model="localValue" />
 
       </div>
+      <p class="help is-info" v-if="helpInfo">{{helpInfo}}</p>
     </div>
   </div>
 </template>
@@ -19,7 +20,7 @@ export default {
   components: {
     'swatches-picker': Swatches,
   },
-  props: ['name', 'label', 'value'],
+  props: ['name', 'label', 'value', 'helpInfo'],
   data () {
     return {
       localValue: '',

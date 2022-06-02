@@ -10,9 +10,11 @@
       <section class="modal-card-body" v-if="localModel">
         <string-field :label="'From State'" :value="stateName" :readonly="true" :options="stateNames" />
         <string-field :name="'toState'" :label="'To State'" :value="localModel.toState" @value-changed="onValueChanged" :options="toStateOptions" />
-        <string-field :name="'actionLabel'" :label="'Action Label'" :value="localModel.actionLabel" @value-changed="onValueChanged" />
+        <string-field :name="'actionLabel'" :label="'Action Label'" :value="localModel.actionLabel" @value-changed="onValueChanged"
+          :helpInfo="'The text shown on the transition button.'" />
 
-        <items-field :name="'permissions'" :label="'Permissions'" :value="localModel.permissions" :fields="permissionFields" @value-changed="onValueChanged" />
+        <items-field :name="'permissions'" :label="'Permissions'" :value="localModel.permissions" :fields="permissionFields" @value-changed="onValueChanged"
+          :helpInfo="'Leave Condition Field empty if no condition needed.'" />
 
         <strings-field :name="'transitionNotifyingGroups'" :label="'Transition Notifying Groups'" :value="localModel.transitionNotifyingGroups" @value-changed="onValueChanged" :options="groupOptions" />
         <strings-field :name="'transitionNotifyingOthers'" :label="'Transition Notifying Others'" :value="localModel.transitionNotifyingOthers" @value-changed="onValueChanged" :options="otherOptions" />

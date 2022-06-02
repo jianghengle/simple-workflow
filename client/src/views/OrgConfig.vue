@@ -40,7 +40,8 @@
 
           <string-field :name="'id'" :label="'Id'" :value="org.id" :readonly="true" />
           <string-field :name="'name'" :label="'Name'" :value="model.name" :placeholder="'Org name'" @value-changed="onValueChanged" />
-          <string-field :name="'awsRole'" :label="'AWS Role'" :value="org.awsRole" :readonly="true" />
+          <string-field :name="'awsRole'" :label="'AWS Role'" :value="org.awsRole" :readonly="true"
+            :helpInfo="'The role to be assumed by the web app. The role should provide the permissions to the DynamoDB tables and the S3 bucket.'" />
           <string-field :name="'awsRegion'" :label="'AWS Region'" :value="org.awsRegion" :readonly="true" />
           <string-field :name="'userTable'" :label="'Org Users Table'" :value="org.userTable" :readonly="true" />
           <string-field :name="'workflowConfigTable'" :label="'Org Workflow Configs Table'" :value="org.workflowConfigTable" :readonly="true" />

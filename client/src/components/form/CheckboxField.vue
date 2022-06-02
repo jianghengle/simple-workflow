@@ -8,6 +8,7 @@
           {{inlineLabel}}
         </label>
       </div>
+      <p class="help is-info" v-if="helpInfo">{{helpInfo}}</p>
     </div>
   </div>
 </template>
@@ -15,7 +16,7 @@
 <script>
 export default {
   name: 'checkbox-field',
-  props: ['name', 'label', 'value', 'inlineLabel', 'readonly'],
+  props: ['name', 'label', 'value', 'inlineLabel', 'readonly', 'helpInfo'],
   data () {
     return {
       localValue: null,

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="localModel" class="mt-6">
+  <div v-if="localModel" class="mt-5">
     <div class="field mb-4">
       <button class="button is-pulled-right" @click="addNewState">
         <span class="icon">

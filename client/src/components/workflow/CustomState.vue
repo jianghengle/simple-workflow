@@ -1,7 +1,9 @@
 <template>
   <div v-if="localModel" class="pl-4 pr-4">
-    <string-field :name="'name'" :label="'Name'" :value="localModel.name" :placeholder="'State name'" @value-changed="onValueChanged" />
-    <color-picker :name="'color'" :label="'Color'" :value="localModel.color" @value-changed="onValueChanged" />
+    <string-field :name="'name'" :label="'Name'" :value="localModel.name" :placeholder="'State name'" @value-changed="onValueChanged"
+      :helpInfo="'The name to show and be referred in transitions. If you changed this name, be sure to update the transitions as well. Otherwise, some transition may be invalid.'" />
+    <color-picker :name="'color'" :label="'Color'" :value="localModel.color" @value-changed="onValueChanged"
+      :helpInfo="'The color of state tag and tranition button. Please choose dark colors as the label will be white.'" />
     <state-permissions :model="localModel.permissions" @model-changed="onValueChanged" :fields="fields" :stateName="localModel.name" />
     <state-transitions :model="localModel.transitions" @model-changed="onValueChanged" :fields="fields" :stateName="localModel.name" :stateNames="stateNames" />
   </div>

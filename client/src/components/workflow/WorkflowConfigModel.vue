@@ -2,7 +2,8 @@
   <div v-if="localModel" class="mb-6">
 
     <div v-if="isNew">
-      <string-field :name="'tableName'" :label="'Table Name'" :value="localModel.tableName" :placeholder="'Database table name for this kind of workflows'" @value-changed="onValueChanged" :prefix="org.id + '-'" />
+      <string-field :name="'tableName'" :label="'Table Name'" :value="localModel.tableName" :placeholder="'Database table name for this kind of workflows'" @value-changed="onValueChanged" :prefix="org.id + '-'"
+        :helpInfo="'The database table will be created to contain these workflow instances. The table name cannot be changed afterwards.'" />
     </div>
     <div v-else>
       <string-field :name="'tableName'" :label="'Workflow Table Name'" :value="model.tableName" :readonly="true" />
@@ -10,9 +11,9 @@
 
     <string-field :name="'name'" :label="'Name'" :value="localModel.name" :placeholder="'Workflow name'" @value-changed="onValueChanged" />
 
-    <textarea-field :name="'description'" :label="'Description'" :value="localModel.description" :placeholder="'Workflow description'" @value-changed="onValueChanged" />
+    <!--<textarea-field :name="'description'" :label="'Description'" :value="localModel.description" :placeholder="'Workflow description'" @value-changed="onValueChanged" />-->
 
-    <string-field :name="'userGroup'" :label="'User Group'" :value="localModel.userGroup" @value-changed="onValueChanged" :options="groupOptions" />
+    <string-field :name="'userGroup'" :label="'User Group'" :value="localModel.userGroup" @value-changed="onValueChanged" :options="groupOptions" :helpInfo="'The user group can see and create workflows.'" />
 
     <custom-fields :model="localModel.fields" @model-changed="onValueChanged" />
 

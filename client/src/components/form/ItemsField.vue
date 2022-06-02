@@ -44,6 +44,7 @@
           <span>New Item</span>
         </a>
       </div>
+      <p class="help is-info" v-if="helpInfo">{{helpInfo}}</p>
     </div>
 
     <items-item-modal :opened="itemsItemModal.opened" :fields="fields" :model="itemsItemModal.model" :index="itemsItemModal.index" :parentModel="parentModel"
@@ -60,7 +61,7 @@ export default {
   components: {
     ItemsItemModal
   },
-  props: ['name', 'label', 'value', 'fields', 'readonly', 'parentModel'],
+  props: ['name', 'label', 'value', 'fields', 'readonly', 'parentModel', 'helpInfo'],
   data () {
     return {
       localValue: [],

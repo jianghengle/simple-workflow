@@ -10,7 +10,8 @@
       <section class="modal-card-body" v-if="localModel">
 
         <string-field :name="'action'" :label="'Action'" :value="localModel.action" @value-changed="onValueChanged" :options="actions" :readonly="index != null" />
-        <strings-field v-if="localModel.action != 'Delete'" :name="'actionFields'" :label="'Action Fields'" :value="localModel.actionFields" @value-changed="onValueChanged" :options="fieldOptions" />
+        <strings-field v-if="localModel.action != 'Delete'" :name="'actionFields'" :label="'Action Fields'" :value="localModel.actionFields" @value-changed="onValueChanged" :options="fieldOptions"
+         :helpInfo="'The affected fields of this permission action.'" />
         <strings-field :name="'groups'" :label="'Actor Groups'" :value="localModel.groups" @value-changed="onValueChanged" :options="groupOptions" />
         <strings-field :name="'others'" :label="'Actor Others'" :value="localModel.others" @value-changed="onValueChanged" :options="otherOptions" />
 

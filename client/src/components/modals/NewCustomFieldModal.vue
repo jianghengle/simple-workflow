@@ -52,7 +52,7 @@
             </label>
           </div>
           <div class="my-options" v-if="optionsMode == 'OrgUsers'">
-            <string-field :value="orgUsersOptions" :options="groupOptions" @value-changed="onOrgUsersValueChanged" />
+            <string-field :value="orgUsersOptions" :options="groupOptions" @value-changed="onOrgUsersValueChanged" :helpInfo="'The users in the group will be the options'" />
           </div>
         </div>
 
@@ -75,7 +75,7 @@
         <string-field v-if="model.type == 'number' && numberLinkedFromOptions && numberLinkedFromOptions.length > 1"
           :name="'linkedFrom'" :label="'Auto Fill With'" :value="model.linkedFrom" :options="numberLinkedFromOptions" @value-changed="onValueChanged" />
 
-        <number-field v-if="(model.type == 'string' || model.type == 'number')" :name="'dashboard'" :label="'Dashboard Index (0 means Not-Show)'" :value="model.dashboard" @value-changed="onValueChanged" />
+        <number-field v-if="(model.type == 'string' || model.type == 'number')" :name="'dashboard'" :label="'Dashboard Index'" :value="model.dashboard" @value-changed="onValueChanged" :helpInfo="'0 means Not-Show-In-Dashboard; Others mean Show-As-Column-With-this-Index'" />
 
         <checkbox-field v-if="(model.dashboard > 0 && model.type == 'number')"  :name="'twoDigits'" :label="'Number in Dashboard'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
 

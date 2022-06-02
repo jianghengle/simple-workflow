@@ -5,6 +5,7 @@
       <div class="control">
         <textarea class="textarea" :class="{'my-disbaled-field': readonly}" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly"></textarea>
       </div>
+      <p class="help is-info" v-if="helpInfo">{{helpInfo}}</p>
     </div>
   </div>
 </template>
@@ -12,7 +13,7 @@
 <script>
 export default {
   name: 'textarea-field',
-  props: ['name', 'label', 'value', 'placeholder', 'readonly'],
+  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'helpInfo'],
   data () {
     return {
       localValue: null,

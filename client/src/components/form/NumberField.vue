@@ -15,6 +15,7 @@
             </select>
           </div>
         </div>
+        <p class="help is-info" v-if="helpInfo">{{helpInfo}}</p>
       </div>
     </div>
   </div>
@@ -23,7 +24,7 @@
 <script>
 export default {
   name: 'number-field',
-  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'options'],
+  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'options', 'helpInfo'],
   data () {
     return {
       localValue: null,

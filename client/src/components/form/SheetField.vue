@@ -24,6 +24,7 @@
           <span>New Row</span>
         </a>
       </div>
+      <p class="help is-info" v-if="helpInfo">{{helpInfo}}</p>
     </div>
     <sheet-row-modal :opened="sheetRowModal.opened" :columns="columns" :model="sheetRowModal.model" :index="sheetRowModal.index"
       @sheet-row-modal-closed="onSheetRowModalClosed" @sheet-row-modal-saved="onSheetRowModalSaved" @sheet-row-modal-removed="onSheetRowModalRemoved" />
@@ -38,7 +39,7 @@ export default {
   components: {
     SheetRowModal
   },
-  props: ['name', 'label', 'value', 'columns', 'readonly'],
+  props: ['name', 'label', 'value', 'columns', 'readonly', 'helpInfo'],
   data () {
     return {
       localValue: [],
