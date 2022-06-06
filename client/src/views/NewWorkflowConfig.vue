@@ -171,6 +171,7 @@ export default {
         name: '',
         description: '',
         userGroup: 'All',
+        adminGroup: 'All',
         fields: [],
         states: [
           {

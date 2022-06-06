@@ -14,6 +14,7 @@
     <!--<textarea-field :name="'description'" :label="'Description'" :value="localModel.description" :placeholder="'Workflow description'" @value-changed="onValueChanged" />-->
 
     <string-field :name="'userGroup'" :label="'User Group'" :value="localModel.userGroup" @value-changed="onValueChanged" :options="groupOptions" :helpInfo="'The user group can see and create workflows.'" />
+    <string-field :name="'adminGroup'" :label="'Admin Group'" :value="localModel.adminGroup" @value-changed="onValueChanged" :options="groupOptions" :helpInfo="'The user group can see and move workflows between folders.'" />
 
     <custom-fields :model="localModel.fields" @model-changed="onValueChanged" />
 
@@ -93,7 +94,7 @@ export default {
     setLocalModel () {
       var model = JSON.parse(JSON.stringify(this.model))
       var localModel = {}
-      var attrs = ['tableName', 'name', 'description', 'userGroup', 'fields', 'states', 'creationNotifyingGroups', 'creationNotifyingOthers']
+      var attrs = ['tableName', 'name', 'description', 'userGroup', 'adminGroup', 'fields', 'states', 'creationNotifyingGroups', 'creationNotifyingOthers']
       for(const attr of attrs) {
         localModel[attr] = model[attr]
       }

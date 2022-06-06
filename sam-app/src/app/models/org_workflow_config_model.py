@@ -6,7 +6,7 @@ from .. import MyError
 
 
 class OrgWorkflowConfigModel(Model):
-    Fields = ['id', 'name', 'description', 'tableName', 'fields', 'states', 'userGroup', 'createdAt', 'updatedAt', 'updatedBy', 'isDeleted', 'count', 'creationNotifyingGroups', 'creationNotifyingOthers']
+    Fields = ['id', 'name', 'description', 'tableName', 'fields', 'states', 'userGroup', 'adminGroup', 'createdAt', 'updatedAt', 'updatedBy', 'isDeleted', 'count', 'creationNotifyingGroups', 'creationNotifyingOthers']
 
     def increment_count(self, org_info):
         table_name = org_info['workflowConfigTable']

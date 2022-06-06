@@ -65,7 +65,7 @@
 
       </section>
       <footer class="modal-card-foot">
-        <a class="button is-link" :disabled="!canSend" :class="{'is-loading': sending}" @click="send">Send</a>
+        <a class="button is-link" :disabled="!canSend" :class="{'is-loading': sending, 'my-disabled-button': !canSend}" @click="send">Send</a>
         <a class="button" @click="close">Cancel</a>
       </footer>
     </div>

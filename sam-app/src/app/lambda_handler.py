@@ -81,6 +81,9 @@ def handle(event, context):
             ('POST', '/org/delete-workflow', True, workflow_controller.delete_workflow),
             ('POST', '/org/send-email-about-workflow', True, workflow_controller.send_email_about_workflow),
             ('GET', '/org/get-folders-for-workflow-config/:config_id', True, folder_controller.get_folders_for_workflow_config),
+            ('POST', '/org/create-folder', True, folder_controller.create_folder),
+            ('POST', '/org/update-folder', True, folder_controller.update_folder),
+            ('POST', '/org/delete-folder', True, folder_controller.delete_folder),
             ('POST', '/org/get-s3-upload-url', True, s3_controller.get_s3_upload_url),
             ('POST', '/org/get-s3-download-url', True, s3_controller.get_s3_download_url),
         ])

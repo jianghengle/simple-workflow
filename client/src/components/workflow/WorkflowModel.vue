@@ -85,9 +85,6 @@ export default {
     configId () {
       return this.$route.params.configId
     },
-    folderId () {
-      return this.$route.params.folderId
-    },
     orgWorkflowConfigs () {
       return this.$store.state.org.orgWorkflowConfigs
     },

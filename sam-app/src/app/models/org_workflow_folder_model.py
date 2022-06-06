@@ -37,5 +37,31 @@ class OrgWorkflowFolderModel(Model):
         aws_region = org_info['awsRegion']
         table_name = org_info['folderTable']
         table = dynamo_service.get_table(table_name, aws_role, aws_region)
-        items = dynamo_service.query(table, 'workflowConfigIdIndex', 'workflowConfigId', workflow_config.id)
+        items = dynamo_service.query(table, 'workflowConfigId-index', 'workflowConfigId', workflow_config.id)
         return [OrgWorkflowFolderModel(item) for item in items]
+
+    @staticmethod
+    def create_folder(org_info, new_folder):
+        aws_role = org_info['awsRole']
+        aws_region = org_info['awsRegion']
+        folder_table_name = org_info['folderTable']
+        folder_table = dynamo_service.get_table(folder_table_name, aws_role, aws_region)
+        dynamo_service.create_item(folder_table, new_folder, 'id')
+
+    @staticmethod
+    def update_folder(org_info, data):
+        aws_role = org_info['awsRole']
+        aws_region = org_info['awsRegion']
+        folder_table_name = org_info['folderTable']
+        folder_table = dynamo_service.get_table(folder_table_name, aws_role, aws_region)
+        id = data['id']
+        del data['id']
+        dynamo_service.update_item(folder_table, 'id', id, data)
+
+    @staticmethod
+    def delete_folder(org_info, id):
+        aws_role = org_info['awsRole']
+        aws_region = org_info['awsRegion']
+        folder_table_name = org_info['folderTable']
+        folder_table = dynamo_service.get_table(folder_table_name, aws_role, aws_region)
+        dynamo_service.delete_item(folder_table, 'id', id)

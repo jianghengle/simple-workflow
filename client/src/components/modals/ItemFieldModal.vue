@@ -57,7 +57,7 @@
 
       </section>
       <footer class="modal-card-foot">
-        <a class="button is-link"  :disabled="!canSave" @click="save">Save</a>
+        <a class="button is-link"  :disabled="!canSave" :class="{'my-disabled-button': !canSave}" @click="save">Save</a>
         <a class="button is-danger" v-if="index != null" @click="deleteField">Delete</a>
         <a class="button" @click="close">Cancel</a>
       </footer>

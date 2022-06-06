@@ -6,13 +6,8 @@
       </div>
     </article>
     <div v-if="token">
-      <div class="mb-5">
-        <nav class="breadcrumb" aria-label="breadcrumbs" v-if="orgWorkflowConfig">
-          <ul>
-            <li><router-link :to="'/org/' + orgId + '/workflow-folder/' + configId + '/' + configId">{{orgWorkflowConfig.name}}</router-link></li>
-            <li class="is-active"><a href="#" aria-current="page">{{workflowId}}</a></li>
-          </ul>
-        </nav>
+      <div class="mb-5" v-if="folderId">
+        <address-bar :workflowFolderId="folderId" />
       </div>
 
       <div v-if="!orgUser">
@@ -126,12 +121,14 @@
 import WorkflowModel from '@/components/workflow/WorkflowModel'
 import SendEmailModal from '@/components/modals/SendEmailModal'
 import dateFormat from 'dateformat'
+import AddressBar from '@/components/workflow/AddressBar'
 
 export default {
   name: 'Workflow',
   components: {
     WorkflowModel,
-    SendEmailModal
+    SendEmailModal,
+    AddressBar
   },
   data () {
     return {
@@ -165,6 +162,9 @@ export default {
         return ''
       }
       return this.model.folderId
+    },
+    folderMap () {
+      return this.$store.state.folders.folderMap
     },
     orgId () {
       return this.$route.params.orgId
@@ -408,7 +408,13 @@ export default {
     orgWorkflowConfig: function (val) {
       if (val) {
         this.getWorkflow()
+        if (!this.folderMap) {
+          this.getFolders()
+        }
       }
+    },
+    configId: function (val) {
+      this.getFolders()
     },
   },
   methods: {
@@ -662,10 +668,20 @@ export default {
     onSendEmailModalClosed () {
       this.sendEmailModal.opened = false
     },
+    getFolders () {
+      this.$http.get(this.server + '/org/get-folders-for-workflow-config/' + this.configId + '/').then(resp => {
+        this.$store.commit('folders/setFolderMap', resp.body)
+      }, err => {
+        console.log('Failed to get folders')
+      })
+    },
   },
   mounted () {
     if (this.org) {
       this.getWorkflow()
+      if (!this.folderMap) {
+        this.getFolders()
+      }
     }
   },
 }

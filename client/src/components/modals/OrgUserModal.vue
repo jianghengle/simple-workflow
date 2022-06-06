@@ -24,7 +24,7 @@
 
       </section>
       <footer class="modal-card-foot">
-        <a class="button is-link"  :disabled="!modelChanged" :class="{'is-loading': waiting}" @click="save">Update</a>
+        <a class="button is-link"  :disabled="!modelChanged" :class="{'is-loading': waiting, 'my-disabled-button': !modelChanged}" @click="save">Update</a>
         <a class="button is-danger" v-if="canDelete" :class="{'is-loading': waiting}" @click="deleteOrgUser">Delete</a>
         <a class="button" @click="close">Cancel</a>
       </footer>

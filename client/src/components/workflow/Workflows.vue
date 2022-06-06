@@ -11,14 +11,44 @@
         {{error}}
       </div>
 
-      <nav class="breadcrumb" aria-label="breadcrumbs">
-        <ul>
-          <li class="is-active"><a href="#" aria-current="page">{{orgWorkflowConfig.name}}</a></li>
-        </ul>
-      </nav>
+      <address-bar />
 
-      <div>  
+      <div class="mt-4">
         <div class="buttons is-pulled-right">
+          <div class="dropdown is-hoverable mr-2" v-if="isAdmin">
+            <div class="dropdown-trigger">
+              <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                <span class="icon">
+                  <i class="fas fa-folder"></i>
+                </span>
+                <span class="icon is-small">
+                  <i class="fas fa-angle-down" aria-hidden="true"></i>
+                </span>
+              </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu" role="menu">
+              <div class="dropdown-content">
+                <router-link class="dropdown-item" v-for="(f, i) in subfolders" :key="'menu-subfolder-'+i" :to="'/org/' + orgId + '/workflow-folder/' + configId + '/' + f.id">
+                  <span class="icon">
+                    <i class="fas fa-folder"></i>
+                  </span>
+                  <span>{{f.name}}</span>
+                </router-link>
+                <hr class="dropdown-divider" v-if="subfolders.length" />
+                <a class="dropdown-item" v-if="!isRootFolder" @click="openFolderModal(folder)">
+                  Edit this folder
+                </a>
+                <hr class="dropdown-divider" v-if="!isRootFolder">
+                <a href="#" class="dropdown-item" @click="openFolderModal(null)">
+                  Add new folder
+                </a>
+                <hr class="dropdown-divider">
+                <a href="#" class="dropdown-item">
+                  Export workflows
+                </a>
+              </div>
+            </div>
+          </div>
           <router-link :to="'/org/' + orgId + '/new-workflow/' + this.configId + '/' + this.folderId + '/new'" class="button">
             <span class="icon">
               <i class="fas fa-plus"></i>
@@ -26,7 +56,7 @@
             <span>New Workflow</span>
           </router-link>
         </div>
-        <h1 class="title is-4">{{orgWorkflowConfig.name}}</h1>
+        <h1 class="title is-4">{{folderName}}</h1>
         <h2 class="subtitle is-6">&nbsp;</h2>
       </div>
   
@@ -59,9 +89,11 @@
           <table class="table is-fullwidth is-hoverable is-striped">
             <thead>
               <tr>
-                <!--<th>
-                  <input type="checkbox">
-                </th>-->
+                <th v-if="isAdmin">
+                  <label class="checkbox">
+                    <input type="checkbox" v-model="selectedAll" />
+                  </label>
+                </th>
                 <th class="is-clickable" @click="changeSortOption('id')">
                   <span>Id</span>
                   <span class="icon" v-if="sortOption.field == 'id'">
@@ -102,7 +134,11 @@
             </thead>
             <tbody>
               <tr class="is-clickable" v-for="(w, i) in showingWorkflows" :key="'wftbr-' + i" @click="viewWorkflow(w)">
-                <!--<td><input type="checkbox"></td>-->
+                <td v-if="isAdmin" @click.stop="''">
+                  <label class="checkbox">
+                    <input type="checkbox" v-model="selection[w.id]" />
+                  </label>
+                </td>
                 <td>{{w.id}}</td>
                 <td>
                   <span class="tag is-link" :style="{'background-color': w.stateColor}">{{w.state}}</span>
@@ -121,10 +157,13 @@
         <div v-else>
           <article class="message is-info">
             <div class="message-body">
-              No workflow found.
+              No workflows found.
             </div>
           </article>
         </div>
+
+        <folder-modal :opened="folderModal.opened" :folder="folderModal.folder" :canDelete="folderModal.canDelete" :parentId="folderId"
+          @folder-modal-closed="folderModal.opened = false" />
 
       </div>
     </div>
@@ -133,21 +172,35 @@
 
 <script>
 import dateFormat from 'dateformat'
+import FolderModal from '@/components/modals/FolderModal'
+import AddressBar from '@/components/workflow/AddressBar'
 
 export default {
   name: 'Workflows',
+  components: {
+    FolderModal,
+    AddressBar
+  },
   data () {
     return {
       error: '',
       waiting: false,
-      folder: null,
       workflows: null,
+      workflowLength: 0,
       filter: 'CurrentFolder',
       search: '',
       sortOption: {
         field: 'createdAt',
         asc: false
-      }
+      },
+      selection: {},
+      selectedAll: false,
+      folderModal: {
+        opened: false,
+        folder: null,
+        canDelete: false,
+        parentId: null,
+      },
     }
   },
   computed: {
@@ -195,7 +248,10 @@ export default {
       if (!this.orgUser) {
         return false
       }
-      return this.orgUser.role == 'Owner' || this.orgUser.role == 'Admin'
+      if (!this.orgWorkflowConfig || !this.orgWorkflowConfig.adminGroup) {
+        return false
+      }
+      return this.orgUser.groups.includes(this.orgWorkflowConfig.adminGroup)
     },
     orgWorkflowConfigs () {
       return this.$store.state.org.orgWorkflowConfigs
@@ -229,8 +285,8 @@ export default {
       dashboardFields.sort((a, b) => a.dashboard - b.dashboard)
       return dashboardFields
     },
-    parentFolders () {
-      return []
+    isRootFolder () {
+      return this.orgWorkflowConfig && this.folderId == this.orgWorkflowConfig.id
     },
     showingWorkflows () {
       var orgUsersMap = this.orgUsersMap
@@ -290,10 +346,54 @@ export default {
         return w
       })
     },
+    selectedWorkflows () {
+      return this.workflows.filter(w => this.selection[w.id])
+    },
+    folderMap () {
+      return this.$store.state.folders.folderMap
+    },
+    folder () {
+      if (this.folderMap) {
+        return this.folderMap[this.folderId]
+      }
+    },
+    folderName () {
+      if (this.folderId == this.configId) {
+        return this.orgWorkflowConfig && this.orgWorkflowConfig.name
+      }
+      return this.folder && this.folder.name
+    },
+    subfolders () {
+      if (!this.folderMap) {
+        return []
+      }
+      var folders = []
+      for (const folderId in this.folderMap) {
+        var folder = this.folderMap[folderId]
+        if (folder.parentId == this.folderId) {
+          folders.push(folder)
+        }
+      }
+      return folders
+    },
   },
   watch: {
+    configId: function (val) {
+      this.getFolders()
+    },
     folderId: function (val) {
       this.getWorkflowsInFolder()
+    },
+    selectedAll: function (val) {
+      if (val) {
+        for (const w of this.showingWorkflows) {
+          this.selection[w.id] = true
+        }
+      } else {
+        for (const i in this.selection) {
+          this.selection[i] = false
+        }
+      }
     },
   },
   methods: {
@@ -320,7 +420,11 @@ export default {
     },
     processWorkflows (workflows) {
       var processed = []
+      var selection = {}
+      var workflowLength = 0
       for (var w of workflows) {
+        workflowLength = workflowLength + 1
+        selection[w.id] = false
         var fieldPermissions = this.getFieldPermissions(w)
         if (!fieldPermissions) {
           continue
@@ -337,6 +441,8 @@ export default {
           processed.push(w)
         }
       }
+      this.selection = selection
+      this.workflowLength = workflowLength
       return processed
     },
     getFieldPermissions (w) {
@@ -405,18 +511,34 @@ export default {
       }
       return false
     },
+    getFolders () {
+      this.$http.get(this.server + '/org/get-folders-for-workflow-config/' + this.configId + '/').then(resp => {
+        this.$store.commit('folders/setFolderMap', resp.body)
+      }, err => {
+        console.log('Failed to get folders')
+      })
+    },
+    openFolderModal (folder) {
+      var canDelete = false
+      if (folder && !this.subfolders.length && !this.workflows.length) {
+        canDelete = true
+      }
+      this.folderModal = {
+        opened: true,
+        folder: folder,
+        canDelete: canDelete,
+      }
+    },
   },
   mounted () {
     this.getWorkflowsInFolder()
+    if (!this.folderMap) {
+      this.getFolders()
+    }
   },
 }
 </script>
 
 <style scoped lang="scss">
-.workflow-id {
-  max-width: 60px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+
 </style>

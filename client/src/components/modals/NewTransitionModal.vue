@@ -20,7 +20,7 @@
         <strings-field :name="'transitionNotifyingOthers'" :label="'Transition Notifying Others'" :value="localModel.transitionNotifyingOthers" @value-changed="onValueChanged" :options="otherOptions" />
       </section>
       <footer class="modal-card-foot">
-        <a class="button is-link" :disabled="!canSave" @click="save">Save</a>
+        <a class="button is-link" :disabled="!canSave" :class="{'my-disabled-button': !canSave}" @click="save">Save</a>
         <a class="button" @click="close">Cancel</a>
       </footer>
     </div>

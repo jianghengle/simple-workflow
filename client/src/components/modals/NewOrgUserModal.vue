@@ -23,7 +23,7 @@
 
       </section>
       <footer class="modal-card-foot">
-        <a class="button is-link"  :disabled="!canCreate" :class="{'is-loading': waiting}" @click="save">Create</a>
+        <a class="button is-link"  :disabled="!canCreate" :class="{'is-loading': waiting, 'my-disabled-button': !canCreate}" @click="save">Create</a>
         <a class="button" @click="close">Cancel</a>
       </footer>
     </div>
