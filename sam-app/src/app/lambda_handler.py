@@ -79,6 +79,7 @@ def handle(event, context):
             ('POST', '/org/create-workflow', True, workflow_controller.create_workflow),
             ('POST', '/org/update-workflow', True, workflow_controller.update_workflow),
             ('POST', '/org/delete-workflow', True, workflow_controller.delete_workflow),
+            ('POST', '/org/move-workflow', True, workflow_controller.move_workflow),
             ('POST', '/org/send-email-about-workflow', True, workflow_controller.send_email_about_workflow),
             ('GET', '/org/get-folders-for-workflow-config/:config_id', True, folder_controller.get_folders_for_workflow_config),
             ('POST', '/org/create-folder', True, folder_controller.create_folder),

@@ -3,6 +3,7 @@ import Vue from 'vue'
 // initial state
 export const state = {
   folderMap: null,
+  selectedFolderId: null,
 }
  
  // mutations
@@ -29,6 +30,9 @@ export const mutations = {
     }
     state.folderMap = folderMap
   },
+  selectFolder (state, folderId) {
+    state.selectedFolderId = folderId
+  }
 }
  
 export default {

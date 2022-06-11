@@ -51,6 +51,17 @@ def update_workflow(req):
     workflow = WorkflowModel.update(req.org_info, workflow_config, data)
     return workflow.data
 
+def move_workflow(req):
+    if (not req.org_user) or (not req.org_user.is_approved()):
+        raise MyError('You are not allow to see this org', 403)
+    data = req.body
+    folder = OrgWorkflowFolderModel.get(req.org_info, data['folderId'])
+    if not folder.workflowConfigId == data['configId']:
+        raise MyError('Target folder is incorrect.')
+    workflow_config = OrgWorkflowConfigModel.get(req.org_info, folder.workflowConfigId)
+    WorkflowModel.update(req.org_info, workflow_config, {'id': data['workflowId'], 'folderId': folder.id}, False)
+    return {'ok': True}
+
 def delete_workflow(req):
     if (not req.org_user) or (not req.org_user.is_approved()):
         raise MyError('You are not allow to see this org', 403)

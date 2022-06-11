@@ -15,7 +15,16 @@
 
       <div class="mt-4">
         <div class="buttons is-pulled-right">
-          <div class="dropdown is-hoverable mr-2" v-if="isAdmin">
+          <router-link v-if="this.configId == this.folderId" :to="'/org/' + orgId + '/new-workflow/' + this.configId + '/' + this.folderId + '/new'" class="button">
+            <span class="icon">
+              <i class="fas fa-plus"></i>
+            </span>
+            <span>New Workflow</span>
+          </router-link>
+        </div>
+        <h1 class="title is-4">
+          <span class="my-folder-name">{{folderName}}</span>
+          <div class="dropdown is-hoverable ml-3" v-if="isAdmin">
             <div class="dropdown-trigger">
               <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
                 <span class="icon">
@@ -39,24 +48,24 @@
                   Edit this folder
                 </a>
                 <hr class="dropdown-divider" v-if="!isRootFolder">
-                <a href="#" class="dropdown-item" @click="openFolderModal(null)">
+                <a class="dropdown-item" @click="openFolderModal(null)">
                   Add new folder
                 </a>
+                <hr class="dropdown-divider" v-if="selectedWorkflows && selectedWorkflows.length">
+                <a class="dropdown-item" v-if="selectedWorkflows && selectedWorkflows.length" @click="openMoveWorkflowModal">
+                  Move selected {{selectedWorkflows.length}} workflows
+                </a>
                 <hr class="dropdown-divider">
-                <a href="#" class="dropdown-item">
+                <a class="dropdown-item" @click="openExportWorkflowModal(false)">
                   Export workflows
+                </a>
+                <a class="dropdown-item" @click="openExportWorkflowModal(true)" v-if="selectedWorkflows.length">
+                  Export selected {{selectedWorkflows.length}} workflows
                 </a>
               </div>
             </div>
           </div>
-          <router-link :to="'/org/' + orgId + '/new-workflow/' + this.configId + '/' + this.folderId + '/new'" class="button">
-            <span class="icon">
-              <i class="fas fa-plus"></i>
-            </span>
-            <span>New Workflow</span>
-          </router-link>
-        </div>
-        <h1 class="title is-4">{{folderName}}</h1>
+        </h1>
         <h2 class="subtitle is-6">&nbsp;</h2>
       </div>
   
@@ -66,8 +75,8 @@
           <div class="column field mb-0 pb-0">
             <p class="control has-icons-left">
               <span class="select">
-                <select v-model="filter">
-                  <option :value="'CurrentFolder'">All</option>
+                <select v-model="localFilter">
+                  <option v-for="(opt, i) in workflowFilterOptions" :key="'workflowFilterOption-'+i">{{opt}}</option>
                 </select>
               </span>
               <span class="icon is-small is-left">
@@ -165,6 +174,12 @@
         <folder-modal :opened="folderModal.opened" :folder="folderModal.folder" :canDelete="folderModal.canDelete" :parentId="folderId"
           @folder-modal-closed="folderModal.opened = false" />
 
+        <move-workflow-modal :opened="moveWorkflowModal.opened" :folder="folder" :workflows="selectedWorkflows"
+          @move-workflow-modal-closed="closeMoveWorkflowModal"/>
+
+        <export-workflow-modal :opened="exportWorkflowModal.opened" :workflows="exportWorkflowModal.workflows" :fields="this.orgWorkflowConfig && this.orgWorkflowConfig.fields"
+          @export-workflow-modal-closed="closeExportWorkflowModal"/>
+
       </div>
     </div>
   </div>
@@ -173,12 +188,16 @@
 <script>
 import dateFormat from 'dateformat'
 import FolderModal from '@/components/modals/FolderModal'
+import MoveWorkflowModal from '@/components/modals/MoveWorkflowModal'
+import ExportWorkflowModal from '@/components/modals/ExportWorkflowModal'
 import AddressBar from '@/components/workflow/AddressBar'
 
 export default {
   name: 'Workflows',
   components: {
     FolderModal,
+    MoveWorkflowModal,
+    ExportWorkflowModal,
     AddressBar
   },
   data () {
@@ -187,7 +206,8 @@ export default {
       waiting: false,
       workflows: null,
       workflowLength: 0,
-      filter: 'CurrentFolder',
+      workflowFilterOptions: ['All'],
+      localFilter: 'All',
       search: '',
       sortOption: {
         field: 'createdAt',
@@ -201,11 +221,21 @@ export default {
         canDelete: false,
         parentId: null,
       },
+      moveWorkflowModal: {
+        opened: false,
+      },
+      exportWorkflowModal: {
+        opened: false,
+        workflows: [],
+      },
     }
   },
   computed: {
     server () {
       return this.$store.state.config.server
+    },
+    workflowFilter () {
+      return this.$store.state.config.workflowFilter
     },
     email () {
       return this.$store.state.user.email
@@ -314,7 +344,11 @@ export default {
         return copy
       })
       var search = this.search.trim().toLowerCase()
+      var workflowFilter = this.localFilter
       var filteredWorkflows = mappedWorkflows.filter(w => {
+        if (workflowFilter != 'All' && w.state != workflowFilter) {
+          return false
+        }
         for(const f of this.dashboardFields) {
           var val = w[f.name] ? w[f.name].toString().toLowerCase() : ''
           if (val.includes(this.search)) {
@@ -347,6 +381,9 @@ export default {
       })
     },
     selectedWorkflows () {
+      if (!this.workflows) {
+        return []
+      }
       return this.workflows.filter(w => this.selection[w.id])
     },
     folderMap () {
@@ -382,7 +419,9 @@ export default {
       this.getFolders()
     },
     folderId: function (val) {
+      this.selectedAll = false
       this.getWorkflowsInFolder()
+      this.localFilter = 'All'
     },
     selectedAll: function (val) {
       if (val) {
@@ -394,6 +433,9 @@ export default {
           this.selection[i] = false
         }
       }
+    },
+    localFilter: function (val) {
+      this.$store.commit('config/setWorkflowFilter', val)
     },
   },
   methods: {
@@ -422,6 +464,7 @@ export default {
       var processed = []
       var selection = {}
       var workflowLength = 0
+      var workflowStates = []
       for (var w of workflows) {
         workflowLength = workflowLength + 1
         selection[w.id] = false
@@ -439,10 +482,17 @@ export default {
         }
         if (viewable) {
           processed.push(w)
+          if (!workflowStates.includes(w.state)) {
+            workflowStates.push(w.state)
+          }
         }
       }
       this.selection = selection
       this.workflowLength = workflowLength
+      if (!workflowStates.includes(this.localFilter)) {
+        this.localFilter = 'All'
+      }
+      this.workflowFilterOptions = ['All'].concat(workflowStates)
       return processed
     },
     getFieldPermissions (w) {
@@ -529,16 +579,52 @@ export default {
         canDelete: canDelete,
       }
     },
+    openMoveWorkflowModal () {
+      this.moveWorkflowModal = {
+        opened: true
+      }
+    },
+    closeMoveWorkflowModal (moved) {
+      if (moved) {
+        this.getWorkflowsInFolder()
+      }
+      this.$store.commit('folders/selectFolder', null)
+      this.moveWorkflowModal.opened = false
+    },
+    openExportWorkflowModal (selected) {
+      if (selected) {
+        if (this.selectedWorkflows.length) {
+          this.exportWorkflowModal = {
+            workflows: this.selectedWorkflows,
+            opened: true,
+          }
+        }
+      } else {
+        if (this.workflows.length) {
+          this.exportWorkflowModal = {
+            workflows: this.workflows,
+            opened: true,
+          }
+        }
+      }
+    },
+    closeExportWorkflowModal () {
+      this.exportWorkflowModal.opened = false
+    },
   },
   mounted () {
     this.getWorkflowsInFolder()
     if (!this.folderMap) {
       this.getFolders()
     }
+    this.localFilter = this.workflowFilter
   },
 }
 </script>
 
 <style scoped lang="scss">
-
+.my-folder-name {
+  position: relative;
+  top: 5px;
+}
 </style>

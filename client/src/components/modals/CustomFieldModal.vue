@@ -124,7 +124,7 @@ export default {
         twoDigits: true,
         defaultValue: null,
       },
-      typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'sheet', 'items'],
+      typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'items'],
       optionsMode: 'NoOptions',
       fixedOptions: [],
       orgUsersOptions: 'All',

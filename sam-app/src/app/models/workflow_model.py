@@ -49,7 +49,7 @@ class WorkflowModel:
         return WorkflowModel(workflow_config, item)
 
     @staticmethod
-    def update(org_info, workflow_config, data):
+    def update(org_info, workflow_config, data, return_new=True):
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table_name = workflow_config.tableName
@@ -57,6 +57,8 @@ class WorkflowModel:
         id = data['id']
         del data['id']
         dynamo_service.update_item(table, 'id', id, data)
+        if not return_new:
+            return
         item = dynamo_service.get_item(table, 'id', id)
         return WorkflowModel(workflow_config, item)
 
