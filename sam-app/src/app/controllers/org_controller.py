@@ -39,7 +39,7 @@ def create_org_user(req):
     else:
         data['activated'] = False
 
-    new_org_user = OrgUserModel.create(req.org_info, data)
+    new_org_user = OrgUserModel.create(req.org_info, data, req.org_user.email)
 
     if not user:
         user = UserModel.create(data['email'])
@@ -49,13 +49,13 @@ def create_org_user(req):
 def update_org_user(req):
     if (not req.org_user) or (not req.org_user.is_admin()):
         raise MyError('Did not find org user or org user is not admin', 403)
-    user = OrgUserModel.update_by_email(req.org_info, req.body['email'], req.body['updates'])
+    user = OrgUserModel.update_by_email(req.org_info, req.body['email'], req.body['updates'], req.org_user.email)
     return user.data
 
 def delete_org_user(req):
     if (not req.org_user) or (not req.org_user.is_admin()):
         raise MyError('Did not find org user or org user is not admin', 403)
-    OrgUserModel.delete(req.org_info, req.body['email'])
+    OrgUserModel.delete(req.org_info, req.body['email'], req.org_user.email)
     user = UserModel.get_by_email(req.body['email'])
     user.remove_org_id(req.org_info['id'])
     return {'ok': True}
@@ -83,7 +83,7 @@ def approve_org_user(req):
     else:
         data['activated'] = False
 
-    org_user = OrgUserModel.update_by_email(req.org_info, req.body['email'], data)
+    org_user = OrgUserModel.update_by_email(req.org_info, req.body['email'], data, req.org_user.email)
     return org_user.data
 
 def reject_org_user(req):
@@ -96,7 +96,7 @@ def reject_org_user(req):
     if org_user.is_approved():
         raise MyError('The org user ' + req.body['email'] + ' has already been approved.')
 
-    OrgUserModel.delete(req.org_info, req.body['email'])
+    OrgUserModel.delete(req.org_info, req.body['email'], req.org_user.email)
     return {'ok': True}
 
 def get_org_workflow_configs(req):
@@ -112,13 +112,13 @@ def get_org_workflow_configs(req):
 def create_workflow_config(req):
     if (not req.org_user) or (not req.org_user.is_admin()):
         raise MyError('You are not admin', 403)
-    workflow_config = OrgWorkflowConfigModel.create(req.org_user.email, req.org_info, req.body)
+    workflow_config = OrgWorkflowConfigModel.create(req.org_user.email, req.org_info, req.body, req.org_user.email)
     return workflow_config.data
     
 def update_workflow_config(req, id):
     if (not req.org_user) or (not req.org_user.is_admin()):
         raise MyError('You are not admin', 403)
-    workflow_config = OrgWorkflowConfigModel.update(req.org_user.email, req.org_info, id, req.body)
+    workflow_config = OrgWorkflowConfigModel.update(req.org_user.email, req.org_info, id, req.body, req.org_user.email)
     return workflow_config.data
 
 def get_workflow_config(req, id):
@@ -130,5 +130,5 @@ def get_workflow_config(req, id):
 def delete_workflow_config(req, id):
     if (not req.org_user) or (not req.org_user.is_admin()):
         raise MyError('You are not admin', 403)
-    workflow_config = OrgWorkflowConfigModel.delete(req.org_user.email, req.org_info, id)
+    workflow_config = OrgWorkflowConfigModel.delete(req.org_user.email, req.org_info, id, req.org_user.email)
     return workflow_config.data

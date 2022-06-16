@@ -2,6 +2,7 @@ import time
 from .model import Model
 from .org_workflow_folder_model import OrgWorkflowFolderModel
 from ..services import dynamo_service
+from ..services import history_service
 from .. import MyError
 
 
@@ -28,7 +29,7 @@ class OrgWorkflowConfigModel(Model):
 
 
     @staticmethod
-    def create(user_email, org_info, data):
+    def create(user_email, org_info, data, actor):
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         workflow_table_name = data['tableName']
@@ -54,13 +55,14 @@ class OrgWorkflowConfigModel(Model):
         data['isDeleted'] = False
         dynamo_service.create_item(workflow_config_table, data, 'id')
 
-        OrgWorkflowFolderModel.create_root_folder(org_info, new_id)
+        OrgWorkflowFolderModel.create_root_folder(org_info, new_id, user_email)
 
         item = dynamo_service.get_item(workflow_config_table, 'id', new_id)
+        history_service.add_history(org_info, actor, 'Create', workflow_config_table_name + ':' + item['id'], item)
         return OrgWorkflowConfigModel(item)
 
     @staticmethod
-    def update(user_email, org_info, id, data):
+    def update(user_email, org_info, id, data, actor):
         table_name = org_info['workflowConfigTable']
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
@@ -70,6 +72,7 @@ class OrgWorkflowConfigModel(Model):
         data['updatedBy'] = user_email
         dynamo_service.update_item(table, 'id', id, data)
         item = dynamo_service.get_item(table, 'id', id)
+        history_service.add_history(org_info, actor, 'Update', table_name + ':' + id, item)
         return OrgWorkflowConfigModel(item)
 
     @staticmethod
@@ -82,7 +85,7 @@ class OrgWorkflowConfigModel(Model):
         return OrgWorkflowConfigModel(item)
 
     @staticmethod
-    def delete(user_email, org_info, id):
+    def delete(user_email, org_info, id, actor):
         table_name = org_info['workflowConfigTable']
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
@@ -95,6 +98,7 @@ class OrgWorkflowConfigModel(Model):
         }
         dynamo_service.update_item(table, 'id', id, data)
         item = dynamo_service.get_item(table, 'id', id)
+        history_service.add_history(org_info, actor, 'Update', table_name + ':' + id, item)
         return OrgWorkflowConfigModel(item)
         
 

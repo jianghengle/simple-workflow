@@ -21,7 +21,7 @@ def update_username(req):
             org = OrgModel.get_by_id(org_id)
             org_user = OrgUserModel.get_by_email(org.data, user.email)
             if org_user:
-                OrgUserModel.update_by_email(org.data, user.email, {'username': user.username})
+                OrgUserModel.update_by_email(org.data, user.email, {'username': user.username}, user.email)
     except:
         print('failed to update org user username: ' + user.email)
     return {
@@ -44,7 +44,7 @@ def request_to_join_org(req):
         else:
             raise MyError('You are already in the org. If you have not set your password, you want to ask the admin to send you the invition link.', 403)
     data = {'email': req.body['email'], 'username': req.body['username'], 'role': 'Pending Approval'}
-    new_org_user = OrgUserModel.create(org.data, data)
+    new_org_user = OrgUserModel.create(org.data, data, data['email'])
     return {'ok': True}
 
 def generate_password_reset_token(req):
@@ -90,7 +90,7 @@ def reset_password(req):
                 data = {'activated': True}
                 if 'username' in req.body:
                     data['username'] = req.body['username']
-                OrgUserModel.update_by_email(org.data, email, data)
+                OrgUserModel.update_by_email(org.data, email, data, email)
     except:
         print('failed to activate org user: ' + email)
     return {'ok': True}

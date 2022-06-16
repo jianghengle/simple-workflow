@@ -1,6 +1,7 @@
 import time
 from .model import Model
 from ..services import dynamo_service
+from ..services import history_service
 from .. import MyError
 
 
@@ -39,34 +40,39 @@ class WorkflowModel:
         return WorkflowModel(workflow_config, item)
 
     @staticmethod
-    def create(org_info, workflow_config, data):
+    def create(org_info, workflow_config, data, actor):
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table_name = workflow_config.tableName
         table = dynamo_service.get_table(table_name, aws_role, aws_region)
+        timestamp = int(time.time()*1000)
+        data['createdAt'] = timestamp
+        data['updatedAt'] = timestamp
         dynamo_service.create_item(table, data, 'id')
         item = dynamo_service.get_item(table, 'id', data['id'])
+        history_service.add_history(org_info, actor, 'Create', table_name + ':' + data['id'], item)
         return WorkflowModel(workflow_config, item)
 
     @staticmethod
-    def update(org_info, workflow_config, data, return_new=True):
+    def update(org_info, workflow_config, data, actor):
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table_name = workflow_config.tableName
         table = dynamo_service.get_table(table_name, aws_role, aws_region)
         id = data['id']
         del data['id']
+        timestamp = int(time.time()*1000)
+        data['updatedAt'] = timestamp
         dynamo_service.update_item(table, 'id', id, data)
-        if not return_new:
-            return
         item = dynamo_service.get_item(table, 'id', id)
+        history_service.add_history(org_info, actor, 'Update', table_name + ':' + id, item)
         return WorkflowModel(workflow_config, item)
 
     @staticmethod
-    def delete(org_info, workflow_config, id):
+    def delete(org_info, workflow_config, id, actor):
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table_name = workflow_config.tableName
         table = dynamo_service.get_table(table_name, aws_role, aws_region)
         dynamo_service.delete_item(table, 'id', id)
-        return
+        history_service.add_history(org_info, actor, 'Delete', table_name + ':' + id, None)

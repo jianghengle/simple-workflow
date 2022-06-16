@@ -2,11 +2,12 @@ import time
 import secrets
 from .model import Model
 from ..services import dynamo_service
+from ..services import history_service
 from .. import MyError
 
 
 class OrgUserModel(Model):
-    Fields = ['email', 'username', 'role', 'groups', 'activated', 'token']
+    Fields = ['email', 'username', 'role', 'groups', 'activated', 'token', 'createdAt', 'updatedAt']
 
     def is_admin(self):
         return self.role == 'Owner' or self.role == 'Admin'
@@ -57,29 +58,37 @@ class OrgUserModel(Model):
         return None
 
     @staticmethod
-    def update_by_email(org_info, email, data):
+    def update_by_email(org_info, email, data, actor):
         user_table_name = org_info['userTable']
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table = dynamo_service.get_table(user_table_name, aws_role, aws_region)
+        timestamp = int(time.time()*1000)
+        data['updatedAt'] = timestamp
         dynamo_service.update_item(table, 'email', email, data)
         item = dynamo_service.get_item(table, 'email', email)
+        history_service.add_history(org_info, actor, 'Update', user_table_name + ':' + email, item)
         return OrgUserModel(item)
 
     @staticmethod
-    def create(org_info, data):
+    def create(org_info, data, actor):
         user_table_name = org_info['userTable']
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table = dynamo_service.get_table(user_table_name, aws_role, aws_region)
+        timestamp = int(time.time()*1000)
+        data['createdAt'] = timestamp
+        data['updatedAt'] = timestamp
         dynamo_service.create_item(table, data, 'email')
         item = dynamo_service.get_item(table, 'email', data['email'])
+        history_service.add_history(org_info, actor, 'Create', user_table_name + ':' + data['email'], item)
         return OrgUserModel(item)
 
     @staticmethod
-    def delete(org_info, email):
+    def delete(org_info, email, actor):
         user_table_name = org_info['userTable']
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table = dynamo_service.get_table(user_table_name, aws_role, aws_region)
+        history_service.add_history(org_info, actor, 'Delete', user_table_name + ':' + email, None)
         dynamo_service.delete_item(table, 'email', email)

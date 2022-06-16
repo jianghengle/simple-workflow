@@ -14,14 +14,13 @@ def create_folder(req):
     count = workflow_config.increment_count(req.org_info)
     new_id = data['workflowConfigId'] + '-' + str(count)
     data['id'] = new_id
-    OrgWorkflowFolderModel.create_folder(req.org_info, data)
+    OrgWorkflowFolderModel.create_folder(req.org_info, data, req.org_user.email)
     folder = OrgWorkflowFolderModel.get(req.org_info, new_id)
     return folder.data
 
 def update_folder(req):
     folder_id = req.body['id']
-    OrgWorkflowFolderModel.update_folder(req.org_info, req.body)
-    folder = OrgWorkflowFolderModel.get(req.org_info, folder_id)
+    folder = OrgWorkflowFolderModel.update_folder(req.org_info, req.body, req.org_user.email)
     return folder.data
 
 def delete_folder(req):
@@ -34,5 +33,5 @@ def delete_folder(req):
     for folder in folders:
         if folder.parentId == data['id']:
             raise MyError('Cannot delete folder having sub-folder.')
-    OrgWorkflowFolderModel.delete_folder(req.org_info, data['id'])
+    OrgWorkflowFolderModel.delete_folder(req.org_info, data['id'], req.org_user.email)
     return {'ok': True}

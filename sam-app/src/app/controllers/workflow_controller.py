@@ -29,26 +29,21 @@ def create_workflow(req):
         raise MyError('You are not allow to see this org', 403)
     data = req.body
     data['createdBy'] = req.org_user.email
-    timestamp = int(time.time()*1000)
-    data['createdAt'] = timestamp
-    data['updatedAt'] = timestamp
     data['updatedBy'] = req.org_user.email
     folder = OrgWorkflowFolderModel.get(req.org_info, data['folderId'])
     workflow_config = OrgWorkflowConfigModel.get(req.org_info, folder.workflowConfigId)
     data['id'] = str(workflow_config.increment_count(req.org_info))
-    workflow = WorkflowModel.create(req.org_info, workflow_config, data)
+    workflow = WorkflowModel.create(req.org_info, workflow_config, data, req.org_user.email)
     return workflow.data
 
 def update_workflow(req):
     if (not req.org_user) or (not req.org_user.is_approved()):
         raise MyError('You are not allow to see this org', 403)
     data = req.body
-    timestamp = int(time.time()*1000)
-    data['updatedAt'] = timestamp
     data['updatedBy'] = req.org_user.email
     folder = OrgWorkflowFolderModel.get(req.org_info, data['folderId'])
     workflow_config = OrgWorkflowConfigModel.get(req.org_info, folder.workflowConfigId)
-    workflow = WorkflowModel.update(req.org_info, workflow_config, data)
+    workflow = WorkflowModel.update(req.org_info, workflow_config, data, req.org_user.email)
     return workflow.data
 
 def move_workflow(req):
@@ -59,7 +54,7 @@ def move_workflow(req):
     if not folder.workflowConfigId == data['configId']:
         raise MyError('Target folder is incorrect.')
     workflow_config = OrgWorkflowConfigModel.get(req.org_info, folder.workflowConfigId)
-    WorkflowModel.update(req.org_info, workflow_config, {'id': data['workflowId'], 'folderId': folder.id}, False)
+    WorkflowModel.update(req.org_info, workflow_config, {'id': data['workflowId'], 'folderId': folder.id}, req.org_user.email)
     return {'ok': True}
 
 def delete_workflow(req):
@@ -68,7 +63,7 @@ def delete_workflow(req):
     data = req.body
     folder = OrgWorkflowFolderModel.get(req.org_info, data['folderId'])
     workflow_config = OrgWorkflowConfigModel.get(req.org_info, folder.workflowConfigId)
-    WorkflowModel.delete(req.org_info, workflow_config, data['id'])
+    WorkflowModel.delete(req.org_info, workflow_config, data['id'], req.org_user.email)
     return {'ok': True}
 
 def send_email_about_workflow(req):

@@ -6,7 +6,7 @@ from .. import MyError
 
 class OrgModel(Model):
     TableName = 'Orgs'
-    Fields = ['id', 'name', 'awsRole', 'awsRegion', 'userTable', 'workflowConfigTable', 'folderTable', 's3Bucket']
+    Fields = ['id', 'name', 'awsRole', 'awsRegion', 'userTable', 'workflowConfigTable', 'folderTable', 's3Bucket', 'historyTable']
 
     @staticmethod
     def get_by_id(id):

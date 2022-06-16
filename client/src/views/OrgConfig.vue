@@ -46,6 +46,7 @@
           <string-field :name="'userTable'" :label="'Org Users Table'" :value="org.userTable" :readonly="true" />
           <string-field :name="'workflowConfigTable'" :label="'Org Workflow Configs Table'" :value="org.workflowConfigTable" :readonly="true" />
           <string-field :name="'folderTable'" :label="'Org Workflow Folders Table'" :value="org.folderTable" :readonly="true" />
+          <string-field :name="'historyTable'" :label="'Org History Table'" :value="org.historyTable" :readonly="true" />
           <string-field :name="'s3Bucket'" :label="'S3 Bucket'" :value="model.s3Bucket" :placeholder="'S3 Bucket for Files'" @value-changed="onValueChanged" :prefix="org.id + '-'" />
 
 
