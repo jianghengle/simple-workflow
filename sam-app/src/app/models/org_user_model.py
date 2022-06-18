@@ -63,6 +63,10 @@ class OrgUserModel(Model):
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table = dynamo_service.get_table(user_table_name, aws_role, aws_region)
+        item = dynamo_service.get_item(table, 'email', email)
+        org_user = OrgUserModel(item)
+        if not org_user.token:
+            org_user.rotate_token(org_info)
         timestamp = int(time.time()*1000)
         data['updatedAt'] = timestamp
         dynamo_service.update_item(table, 'email', email, data)
