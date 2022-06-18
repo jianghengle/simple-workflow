@@ -193,7 +193,7 @@ export default {
           this.model.options = null
         } else if (this.optionsMode == 'Fixed') {
           this.model.options = this.fixedOptions
-        } else if (typeof(this.field.options) == 'string') {
+        } else if (this.optionsMode == 'OrgUsers') {
           this.model.options = this.orgUsersOptions
         } else {
           if (this.optionsDeprived.from && this.optionsDeprived.mappings.length) {
@@ -208,6 +208,22 @@ export default {
         this.model.defaultValue = null
       }
       this.$emit('new-custom-field-modal-saved', [this.insertAfter, this.model])
+      this.resetModel()
+    },
+    resetModel () {
+      this.model = {
+        name: '',
+        label: '',
+        type: 'string',
+        options: null,
+        columns: [],
+        itemFields: [],
+        linkedFrom: '',
+        linkedValues: [],
+        dashboard: 0,
+        twoDigits: true,
+        defaultValue: null,
+      }
     },
     onValueChanged (val) {
       var name = val[0]

@@ -108,6 +108,18 @@ export default {
       }
       this.localModel.actionLabel = this.localModel.actionLabel.trim()
       this.$emit('new-transition-modal-saved', this.localModel)
+      this.resetModel()
+    },
+    resetModel () {
+      this.localModel = {
+        toState: '',
+        actionLabel: '',
+        actor: {
+           groups: [],
+           others: [],
+        },
+        permissions: [],
+      }
     },
     onValueChanged (val) {
       var name = val[0]
