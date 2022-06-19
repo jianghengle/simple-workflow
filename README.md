@@ -12,9 +12,11 @@ The workflows are totaly customerized by yourself including:
 - what fields should be in a workflow
 - what states can a workflow go through and their transitions
 - the user's permissions on the workflow in each state.
-- and more
+- and more ...
 
 You can play with the app by login [myworkflowhub.com](https://myworkflowhub.com/) with a demo user `demo@myworkflowhub.com` and password `123456`, where you can create/edit workflows or even new workflow config.
+
+If you are interested, you can contact the author `jianghengle@gmail.com` to create a new org for you.
 
 ## Tech stack
 
