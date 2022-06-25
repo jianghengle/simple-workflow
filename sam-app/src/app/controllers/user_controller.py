@@ -95,6 +95,22 @@ def reset_password(req):
         print('failed to activate org user: ' + email)
     return {'ok': True}
 
+def sign_up(req):
+    email = req.body['email']
+    user = UserModel.get_by_email(email)
+    if user:
+        raise MyError('The email address has been already used', 403)
+    UserModel.create(email)
+    user = UserModel.generate_password_reset_token(email)
+    password_reset_link = 'https://myworkflowhub.com/user/change-password/' +  quote(email, safe='') + '/' + user.resetPasswordToken + '/new'
+    body_text = SIGN_UP_TEXT.format(password_reset_link)
+    body_html = SIGN_UP_HTML.format(password_reset_link, password_reset_link)
+    recipents = [email]
+    send_email(recipents, SIGN_UP_SUBJECT, body_text, body_html)
+    my_notice = 'myworkflowhub new sign up: ' + email
+    send_email(['jianghengle@gmail.com'], my_notice, my_notice, my_notice)
+    return {'ok': True}
+
 def auth_user(req):
     email = req.body['email']
     password = req.body['password']
@@ -126,6 +142,19 @@ INVITE_TEXT = "Hi, {} invited you to join the org \"{}\". Please use the followi
 INVITE_HTML = """<html>
 <body>
   <p>Hi, {} invited you to join the org \"{}\". Please use the following link to set your password:</p>
+  <p><a href='{}' target="_blank">{}</a></p>
+  <p>and then you can sign in https://myworkflowhub.com.</p>
+</body>
+</html>
+"""
+
+SIGN_UP_SUBJECT = "myworkflowhub.com Sign Up"
+
+SIGN_UP_TEXT = "Hi, you have requested to sign up myworkflowhub.com. Please use the following link to set your password:\r\n{}, and then sign in https://myworkflowhub.com"
+
+SIGN_UP_HTML = """<html>
+<body>
+  <p>Hi, you have requested to sign up myworkflowhub.com. Please use the following link to set your password:</p>
   <p><a href='{}' target="_blank">{}</a></p>
   <p>and then you can sign in https://myworkflowhub.com.</p>
 </body>

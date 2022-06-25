@@ -82,6 +82,11 @@
             Request to join Org?
           </router-link>
         </div>
+        <div class="mt-1">
+          <router-link :to="'/user/sign-up'">
+            Sign up as a new user?
+          </router-link>
+        </div>
       </div>
     </section>
   </div>

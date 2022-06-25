@@ -31,6 +31,11 @@ const routes = [
     component: () => import('../views/ChangePassword.vue')
   },
   {
+    path: '/user/sign-up',
+    name: 'SignUp',
+    component: () => import('../views/SignUp.vue')
+  },
+  {
     path: '/org/:orgId/workflow-configs',
     name: 'WorkflowConfigs',
     component: () => import('../views/WorkflowConfigs.vue')

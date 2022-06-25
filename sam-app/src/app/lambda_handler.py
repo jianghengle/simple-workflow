@@ -60,6 +60,7 @@ def handle(event, context):
             ('POST', '/user/generate-password-reset-token', False, user_controller.generate_password_reset_token),
             ('POST', '/user/send-invite', True, user_controller.send_invite),
             ('POST', '/user/reset-password', False, user_controller.reset_password),
+            ('POST', '/user/sign-up', False, user_controller.sign_up),
             ('POST', '/user/auth-user', False, user_controller.auth_user),
             ('GET', '/org/get-org/:id', True, org_controller.get_org),
             ('POST', '/org/update-org/:id', True, org_controller.update_org),
