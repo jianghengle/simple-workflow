@@ -45,6 +45,13 @@ def request_to_join_org(req):
             raise MyError('You are already in the org. If you have not set your password, you want to ask the admin to send you the invition link.', 403)
     data = {'email': req.body['email'], 'username': req.body['username'], 'role': 'Pending Approval'}
     new_org_user = OrgUserModel.create(org.data, data, data['email'])
+
+    recipents = []
+    for u in OrgUserModel.get_all_by_org_info(org.data):
+        if u.is_admin():
+            recipents.append(u.email)
+    email_body = REQUEST_ORG_TEXT.format(data['email'], org.name)
+    send_email(recipents, REQUEST_ORG_SUBJECT, email_body, email_body)
     return {'ok': True}
 
 def generate_password_reset_token(req):
@@ -160,3 +167,6 @@ SIGN_UP_HTML = """<html>
 </body>
 </html>
 """
+
+REQUEST_ORG_SUBJECT = "myworkflowhub.com new user request"
+REQUEST_ORG_TEXT = "A new user: {} just requested to join your org: {}. Please go to your org users table at https://myworkflowhub.com to approve or reject the request."
