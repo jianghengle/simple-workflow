@@ -36,12 +36,12 @@
         </router-link>
       </div>
 
-      <div v-if="error" class="notification is-danger is-light">
+      <div v-if="error" class="notification is-danger is-light mt-4">
         <button class="delete" @click="error=''"></button>
         {{error}}
       </div>
 
-      <div v-if="success" class="notification is-success is-light">
+      <div v-if="success" class="notification is-success is-light mt-4">
         {{success}}
       </div>
     </section>

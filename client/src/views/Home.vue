@@ -5,6 +5,17 @@
       <h2 class="subtitle">
         A simple tool to manage your workflows.
       </h2>
+      <article class="message" v-if="!token">
+        <div class="message-body content pt-1 pl-1 pr-1">
+          <ul>
+            <li>If you've already joined an org, you can sign in with your credentials.</li>
+            <li>If you have not joined an org but know your org id, you can request to join your org by the link below.</li>
+            <li>If you just want to try out this app, you can sign in with a demo user: <em>demo@myworkflowhub.com</em> and password: <em>123456</em>.</li>
+            <li>If you are interested to create your org on this platform, you can sign up and then create your owned org inside.</li>
+            <li>The source code in open source on <a href="https://github.com/jianghengle/simple-workflow">Github</a>.</li>
+          </ul>
+        </div>
+      </article>
 
       <div v-if="token">
         <div v-if="orgIds">
@@ -18,7 +29,8 @@
           <div v-else>
             <article class="message is-warn">
               <div class="message-body">
-                Seems you are not in any org...
+                <p>Seems you are not in any org...</p>
+                <p>You can create an org or request to join an org from the menu.</p>
               </div>
             </article>
           </div>

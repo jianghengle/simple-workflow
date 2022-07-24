@@ -43,6 +43,13 @@
                 <router-link class="navbar-item" :to="'/user/request-to-join-org'">
                   Request to Org
                 </router-link>
+                <hr class="navbar-divider">
+                <router-link class="navbar-item" :to="'/new-self-hosted-org'">
+                  Create New Self Hosted Org
+                </router-link>
+                <router-link class="navbar-item" :to="'/new-platform-hosted-org'">
+                  Create New Platform Hosted Org
+                </router-link>
               </div>
             </div>
 
@@ -57,6 +64,11 @@
                 <i class="fas fa-sign-out-alt"></i>
               </span>
               <span>Sign out</span>
+            </a>
+            <a class="navbar-item" target="_blank" href="https://github.com/jianghengle/simple-workflow">
+              <span class="icon">
+                <i class="fab fa-github"></i>
+              </span>
             </a>
           </div>
         </div>

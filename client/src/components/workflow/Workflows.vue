@@ -360,11 +360,22 @@ export default {
           || w.createdBy.toLowerCase().includes(search)
       })
       var sort = this.sortOption
+      var sortFieldType = 'string'
+      if (this.dashboardFields) {
+        for (const df of this.dashboardFields) {
+          if (df.name == sort.field) {
+            if (df.type == 'number') {
+              sortFieldType = 'number'
+            }
+            break
+          }
+        }
+      }
       var sortedWorkflows = filteredWorkflows.sort((a, b) => {
         var va = a[sort.field]
         var vb = b[sort.field]
-        if (sort.field == 'createdAt') {
-          return sort.asc ? va - vb : vb - va
+        if (sort.field == 'createdAt' || sort.field == 'id' || sortFieldType == 'number') {
+          return sort.asc ? Number(va) - Number(vb) : Number(vb) - Number(va)
         }
         va = va ? va.toString() : ''
         vb = vb ? vb.toString() : ''

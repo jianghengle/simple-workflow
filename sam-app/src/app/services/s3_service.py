@@ -75,3 +75,6 @@ def create_presigned_url(bucket_name, object_name, expiration=3600, role=None):
     # The response contains the presigned URL
     return response
 
+def create_bucket(bucket_name, role=None):
+    s3_client = get_s3_client(role)
+    s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': 'us-west-2'})

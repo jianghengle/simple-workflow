@@ -30,13 +30,21 @@ def get_resource(role=None, region='us-west-2'):
 
 def create_table(table_name, attribute_definitions, key_schema, global_secondary_indexes=[], role=None, region='us-west-2'):
     resource = get_resource(role, region)
-    table = resource.create_table(
-        TableName=table_name,
-        AttributeDefinitions=attribute_definitions,
-        KeySchema=key_schema,
-        GlobalSecondaryIndexes=global_secondary_indexes,
-        BillingMode='PAY_PER_REQUEST'
-    )
+    if len(global_secondary_indexes):
+        table = resource.create_table(
+            TableName=table_name,
+            AttributeDefinitions=attribute_definitions,
+            KeySchema=key_schema,
+            GlobalSecondaryIndexes=global_secondary_indexes,
+            BillingMode='PAY_PER_REQUEST'
+        )
+    else:
+        table = resource.create_table(
+            TableName=table_name,
+            AttributeDefinitions=attribute_definitions,
+            KeySchema=key_schema,
+            BillingMode='PAY_PER_REQUEST'
+        )
     return table
 
 

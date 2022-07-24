@@ -80,6 +80,7 @@ class OrgUserModel(Model):
         aws_role = org_info['awsRole']
         aws_region = org_info['awsRegion']
         table = dynamo_service.get_table(user_table_name, aws_role, aws_region)
+        table.wait_until_exists()
         timestamp = int(time.time()*1000)
         data['createdAt'] = timestamp
         data['updatedAt'] = timestamp

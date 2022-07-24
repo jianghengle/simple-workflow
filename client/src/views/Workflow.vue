@@ -97,7 +97,7 @@
                       <button class="button" @click="sendEmail">Send Email</button>
                     </div>
                     <div class="control" v-if="folderId">
-                      <router-link class="button" :to="'/org/' + orgId + '/new-workflow/' + configId + '/' + folderId + '/' + workflowId">Copy to New</router-link>
+                      <router-link class="button" :to="'/org/' + orgId + '/new-workflow/' + configId + '/' + configId + '/' + workflowId">Copy to New</router-link>
                     </div>
                   </div>
 
@@ -105,8 +105,9 @@
                     <button class="delete" @click="error=''"></button>
                     {{error}}
                   </div>
-
-                  <send-email-modal :opened="sendEmailModal.opened" :workflow="model" @send-email-modal-closed="onSendEmailModalClosed" />
+                  <div v-if="orgUsers">
+                    <send-email-modal :opened="sendEmailModal.opened" :workflow="model" @send-email-modal-closed="onSendEmailModalClosed" />
+                  </div>
                 </div>
               </div>
             </div>

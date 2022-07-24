@@ -88,6 +88,9 @@ def handle(event, context):
             ('POST', '/org/delete-folder', True, folder_controller.delete_folder),
             ('POST', '/org/get-s3-upload-url', True, s3_controller.get_s3_upload_url),
             ('POST', '/org/get-s3-download-url', True, s3_controller.get_s3_download_url),
+            ('POST', '/org/check-org-id', False, org_controller.check_org_id),
+            ('POST', '/org/create-org', True, org_controller.create_org),
+            ('POST', '/org/create-role-for-platform-hosted-org', True, org_controller.create_role_for_platform_hosted_org),
         ])
         return router.route(req)
     except MyError as err:

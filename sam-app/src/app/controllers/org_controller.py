@@ -1,8 +1,13 @@
+import re, time
 from ..models.user_model import UserModel
 from ..models.org_model import OrgModel
 from ..models.org_user_model import OrgUserModel
 from ..models.org_workflow_config_model import OrgWorkflowConfigModel
 from .. import MyError
+from ..services.s3_service import create_bucket
+from ..services.ses_service import send_email
+from ..services import dynamo_service
+from ..services import iam_service
 
 
 def get_org(req, id):
@@ -31,6 +36,11 @@ def get_org_users(req):
 def create_org_user(req):
     if (not req.org_user) or (not req.org_user.is_admin()):
         raise MyError('Did not find org user or org user is not admin', 403)
+    if (req.org_user.role == 'Owner'):
+        if req.body['role'] not in ['Admin', 'User']:
+            raise MyError('Incorrect org user role', 403)
+    elif req.body['role'] != 'User':
+        raise MyError('Incorrect org user role', 403)
 
     data = req.body
     user = UserModel.get_by_email(data['email'])
@@ -132,3 +142,145 @@ def delete_workflow_config(req, id):
         raise MyError('You are not admin', 403)
     workflow_config = OrgWorkflowConfigModel.delete(req.org_user.email, req.org_info, id, req.org_user.email)
     return workflow_config.data
+
+
+def check_org_id(req):
+    orgs = OrgModel.get_all()
+    for org in orgs:
+        if org.id == req.body['orgId']:
+            raise MyError('This org id has already been used', 403)
+    return {'ok': True}
+
+def create_org(req):
+    org_id = req.body['orgId']
+    if not re.match("^([a-z]|[0-9])+$", org_id):
+        raise MyError('This org id is invalid', 403)
+    orgs = OrgModel.get_all()
+    for org in orgs:
+        if org.id == req.body['orgId']:
+            raise MyError('This org id has already been used', 403)
+    org_name = req.body['orgName']
+    aws_region = req.body['awsRegion']
+    aws_role = req.body['iamRole']
+    create_org_tables(org_id, aws_role, aws_region)
+    create_org_s3_bucket(org_id, aws_role)
+
+    org = OrgModel.create(org_id, org_name, aws_region, aws_role)
+    user = UserModel.get_by_token(req.token)
+    org_user_data = {
+        'email': user.email,
+        'activated': True,
+        'groups': [],
+        'role': 'Owner',
+        'username': user.username,
+    }
+    org_user = OrgUserModel.create(org.data, org_user_data, user.email)
+    user.add_org_id(org_id)
+    my_notice = 'myworkflowhub new org created: ' + org_id + '<' + user.email + '>'
+    send_email(['jianghengle@gmail.com'], my_notice, my_notice, my_notice)
+
+def create_role_for_platform_hosted_org(req):
+    org_id = req.body['orgId']
+    if not re.match("^([a-z]|[0-9])+$", org_id):
+        raise MyError('This org id is invalid', 403)
+    orgs = OrgModel.get_all()
+    for org in orgs:
+        if org.id == req.body['orgId']:
+            raise MyError('This org id has already been used', 403)
+    aws_role = iam_service.create_platform_hosted_org_role(org_id, 'us-west-2')
+    time.sleep(20)
+    return {'awsRole': aws_role}
+
+
+FolderTableAttr = [
+    { 'AttributeName': 'id', 'AttributeType': 'S'},
+    { 'AttributeName': 'workflowConfigId', 'AttributeType': 'S'},
+]
+FolderTableKey = [
+    { 'AttributeName': 'id', 'KeyType': 'HASH'},
+]
+FolderTableGSI = [
+    {
+        'IndexName': 'workflowConfigId-index',
+        'KeySchema': [
+            { 'AttributeName': 'workflowConfigId', 'KeyType': 'HASH' },
+        ],
+        'Projection': { 'ProjectionType': 'ALL' },
+    },
+]
+
+HistoryTableAttr = [
+    { 'AttributeName': 'id', 'AttributeType': 'S'},
+    { 'AttributeName': 'entityId', 'AttributeType': 'S'},
+    { 'AttributeName': 'timestamp', 'AttributeType': 'N'},
+]
+HistoryTableKey = [
+    { 'AttributeName': 'id', 'KeyType': 'HASH'},
+]
+HistoryTableGSI = [
+    {
+        'IndexName': 'entityId-timestamp-index',
+        'KeySchema': [
+            { 'AttributeName': 'entityId', 'KeyType': 'HASH' },
+            { 'AttributeName': 'timestamp', 'KeyType': 'RANGE' },
+        ],
+        'Projection': { 'ProjectionType': 'ALL' },
+    },
+]
+
+UserTableAttr = [
+    { 'AttributeName': 'email', 'AttributeType': 'S'},
+    { 'AttributeName': 'token', 'AttributeType': 'S'},
+]
+UserTableKey = [
+    { 'AttributeName': 'email', 'KeyType': 'HASH'},
+]
+UserTableGSI = [
+    {
+        'IndexName': 'tokenIndex',
+        'KeySchema': [
+            { 'AttributeName': 'token', 'KeyType': 'HASH' },
+        ],
+        'Projection': { 'ProjectionType': 'ALL' },
+    },
+]
+
+WorkflowConfigTableAttr = [
+    { 'AttributeName': 'id', 'AttributeType': 'S'},
+]
+WorkflowConfigTableKey = [
+    { 'AttributeName': 'id', 'KeyType': 'HASH'},
+]
+
+
+def create_org_tables(org_id, aws_role, aws_region):
+    dynamo_service.create_table(org_id + '-Users', UserTableAttr, UserTableKey, UserTableGSI, aws_role, aws_region)
+    dynamo_service.create_table(org_id + '-Folders', FolderTableAttr, FolderTableKey, FolderTableGSI, aws_role, aws_region)
+    dynamo_service.create_table(org_id + '-History', HistoryTableAttr, HistoryTableKey, HistoryTableGSI, aws_role, aws_region)
+    dynamo_service.create_table(org_id + '-WorkflowConfigs', WorkflowConfigTableAttr, WorkflowConfigTableKey, [], aws_role, aws_region)
+
+def create_org_s3_bucket(org_id, aws_role):
+    create_bucket(org_id + '-workflows-bucket', aws_role)
+
+
+My_managed_policy = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "RESOURCE_ARN"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:Scan",
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "RESOURCE_ARN"
+        }
+    ]
+}

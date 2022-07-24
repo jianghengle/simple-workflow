@@ -26,6 +26,13 @@ export const mutations = {
     localStorage.removeItem('token')
     localStorage.removeItem('email')
     localStorage.removeItem('username')
+  },
+
+  addOrgId (state, orgId) {
+    if (!state.orgIds) {
+      state.orgIds = []
+    }
+    state.orgIds.push(orgId)
   }
 }
 

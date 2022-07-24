@@ -115,7 +115,9 @@ export default {
       }
       var groups = []
       for (const u of this.orgUsers) {
-        groups = groups.concat(u.groups)
+        if (u.groups) {
+          groups = groups.concat(u.groups)
+        }
       }
       groups = [...new Set(groups)]
       groups.sort()
@@ -132,8 +134,10 @@ export default {
       }
       for (const u of this.orgUsers) {
         groupUsers['All'].push(u)
-        for (const g of u.groups) {
-          groupUsers[g].push(u)
+        if (u.groups) {
+          for (const g of u.groups) {
+            groupUsers[g].push(u)
+          }
         }
       }
       return groupUsers

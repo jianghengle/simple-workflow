@@ -131,6 +131,12 @@ export default {
       }
       return this.orgWorkflowConfig.states[0].name
     },
+    statePermissions () {
+      if (!this.orgWorkflowConfig) {
+        return null
+      }
+      return this.orgWorkflowConfig.states[0].permissions
+    },
     canAccess () {
       if (!this.orgUser) {
         return false
@@ -171,6 +177,11 @@ export default {
         var model = resp.body
         model.state = this.firstStateName
         model.createdBy = this.email
+        for(const f of this.orgWorkflowConfig.fields) {
+          if (!this.isFieldEditable(f, model)) {
+            model[f.name] = null
+          }
+        }
         this.model = model
         this.waiting = false
       }, err => {
@@ -245,6 +256,52 @@ export default {
       return String(email)
         .toLowerCase()
         .match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+    },
+    isFieldEditable (f, model) {
+      for (const permission of this.statePermissions) {
+        if (permission.action != 'Edit') {
+          continue
+        }
+        if (this.userIsActor(permission, model)) {
+          if (permission.actionFields.includes(f.name) || permission.actionFields.includes('All')) {
+            return true
+          }
+        }
+      }
+      return false
+    },
+    userIsActor (permission, model) {
+      var allowedGroups = permission.groups
+      for (const g of allowedGroups) {
+        if (this.orgUser.groups.includes(g)) {
+          return true
+        }
+      }
+      var others = permission.others
+      for (const o of others) {
+        if (o == 'Workflow Creator') {
+          return true
+        } else {
+          var field = null
+          for (const f of this.orgWorkflowConfig.fields) {
+            if (f.name == o) {
+              field = f
+            }
+          }
+          if (field) {
+            if (field.type == 'string') {
+              if (this.email == model[field.name]) {
+                return true
+              }
+            }
+            if (field.type == 'strings') {
+              if (model[field.name].includes(this.email)) {
+                return true
+              }
+            }
+          }
+        }
+      }
     },
   },
   mounted () {

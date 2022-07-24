@@ -74,7 +74,7 @@
             <div v-if="!availableConfigs.length">
               <article class="message is-info">
                 <div class="message-body">
-                  No workflow config available yet. You can create one if you are able to.
+                  No workflow config available in the org yet.
                 </div>
               </article>
             </div>

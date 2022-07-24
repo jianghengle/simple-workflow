@@ -93,6 +93,16 @@ Resources:
               - 'sts:AssumeRole'
             Effect: Allow
             Resource: "*"
+          - Action:
+              - iam:CreatePolicy
+              - iam:CreatePolicyVersion
+              - iam:GetPolicy
+              - iam:CreateRole
+              - iam:GetRole
+              - iam:AttachRolePolicy
+              - iam:UpdateAssumeRolePolicy
+            Effect: Allow
+            Resource: "*"
           Version: '2012-10-17'
         PolicyName: 'MyAppFunctionRolePolicy'
 

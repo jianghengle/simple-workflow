@@ -75,6 +75,16 @@ const routes = [
     name: 'Workflow',
     component: () => import('../views/Workflow.vue')
   },
+  {
+    path: '/new-self-hosted-org',
+    name: 'NewSelfHostedOrg',
+    component: () => import('../views/NewSelfHostedOrg.vue')
+  },
+  {
+    path: '/new-platform-hosted-org',
+    name: 'NewPlatformHostedOrg',
+    component: () => import('../views/NewPlatformHostedOrg.vue')
+  },
 ]
 
 const router = new VueRouter({
