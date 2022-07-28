@@ -27,12 +27,37 @@
         <div v-else>
           <div class="mb-6">
             <div class="buttons is-pulled-right" v-if="isAdmin && org">
-              <router-link class="button" :to="'/org/' + org.id + '/new-workflow-config/new'">
-                <span class="icon">
-                  <i class="fas fa-plus"></i>
-                </span>
-                <span>New Workflow Config</span>
-              </router-link>
+
+              <div class="dropdown my-dropdown mr-2" :class="{'is-active': dropdownOpened}">
+                <div class="dropdown-trigger">
+                  <button class="button mb-0" aria-haspopup="true" aria-controls="dropdown-menu" @click="toggleDropdown">
+                    <span class="icon">
+                      <i class="fas fa-plus"></i>
+                    </span>
+                    <span>New Workflow Config</span>
+                    <span class="icon is-small">
+                      <i class="fas fa-angle-down" aria-hidden="true"></i>
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <router-link class="dropdown-item" :to="'/org/' + org.id + '/new-workflow-config/new'">
+                      From Blank Template
+                    </router-link>
+                    <hr class="dropdown-divider">
+                    <div class="dropdown-item" v-if="!templates.length">
+                      <span class="icon is-small is-size-6">
+                        <i class="fas fa-spinner fa-pulse"></i>
+                      </span>
+                    </div>
+                    <router-link class="dropdown-item" v-for="(t, i) in templates" :key="'d-t-'+i" :to="'/org/' + org.id + '/new-workflow-config-from-template/' + t.id">
+                      From Template: <strong>{{t.name}}</strong>
+                    </router-link>
+                  </div>
+                </div>
+              </div>
+
               <router-link class="button" :to="'/org/' + org.id + '/org-users'">
                 <span class="icon">
                   <i class="fas fa-user-cog"></i>
@@ -74,7 +99,7 @@
             <div v-if="!availableConfigs.length">
               <article class="message is-info">
                 <div class="message-body">
-                  No workflow config available in the org yet.
+                  No workflow config available in the org yet. You can create new workflow config if you are an admin.
                 </div>
               </article>
             </div>
@@ -98,6 +123,8 @@ export default {
       error: '',
       waiting: false,
       workflowConfigs: null,
+      dropdownOpened: false,
+      templates: [],
     }
   },
   computed: {
@@ -163,6 +190,16 @@ export default {
     editWorkflowConfig (wc) {
       this.$router.push('/org/' + this.orgId + '/workflow-config/' + wc.id)
     },
+    toggleDropdown () {
+      this.dropdownOpened = !this.dropdownOpened
+      if (!this.templates.length) {
+        this.$http.get(this.server + '/template/get-all-templates/').then(resp => {
+          this.templates = resp.body
+        }, err => {
+          console.log('Failed to get templates')
+        })
+      }
+    },
   },
   mounted () {
   }
@@ -170,5 +207,7 @@ export default {
 </script>
 
 <style scoped>
-
+.my-dropdown {
+  margin-top: -7px;
+}
 </style>

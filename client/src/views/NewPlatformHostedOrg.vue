@@ -18,7 +18,7 @@
         <span>Create a New Platform Hosted Org</span>
       </h1>
       <div class="notification is-info is-light">
-        The new org's data will be hosted in your the platform's AWS account, and you can access the data through the platform.
+        The new org's data will be hosted in your the platform's AWS account, and you can only access the data through the platform.
       </div>
 
       <div class="field">

@@ -37,7 +37,6 @@ class OrgWorkflowConfigModel(Model):
             create_workflow_table(aws_role, aws_region, workflow_table_name)
         except:
             raise MyError('Cannot create table with name: ' + workflow_table_name)
-        
         workflow_config_table_name = org_info['workflowConfigTable']
         workflow_config_table = dynamo_service.get_table(workflow_config_table_name, aws_role, aws_region)
         items = dynamo_service.scan(workflow_config_table)
@@ -46,17 +45,15 @@ class OrgWorkflowConfigModel(Model):
         new_id = '1'
         if len(workflow_config_ids):
             new_id = str(max(workflow_config_ids) + 1)
-        
         data['id'] = new_id
         timestamp = int(time.time()*1000)
         data['createdAt'] = timestamp
         data['updatedAt'] = timestamp
         data['updatedBy'] = user_email
         data['isDeleted'] = False
+        data['count'] = 0
         dynamo_service.create_item(workflow_config_table, data, 'id')
-
         OrgWorkflowFolderModel.create_root_folder(org_info, new_id, user_email)
-
         item = dynamo_service.get_item(workflow_config_table, 'id', new_id)
         history_service.add_history(org_info, actor, 'Create', workflow_config_table_name + ':' + item['id'], item)
         return OrgWorkflowConfigModel(item)

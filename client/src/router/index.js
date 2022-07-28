@@ -85,6 +85,11 @@ const routes = [
     name: 'NewPlatformHostedOrg',
     component: () => import('../views/NewPlatformHostedOrg.vue')
   },
+  {
+    path: '/org/:orgId/new-workflow-config-from-template/:templateId',
+    name: 'NewWorkflowConfigFromTemplate',
+    component: () => import('../views/NewWorkflowConfigFromTemplate.vue')
+  },
 ]
 
 const router = new VueRouter({

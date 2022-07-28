@@ -9,7 +9,7 @@
       <nav class="breadcrumb" aria-label="breadcrumbs">
         <ul>
           <li><router-link :to="'/org/' + orgId + '/workflow-configs'">All Workflow Configs</router-link></li>
-          <li class="is-active"><a href="#" aria-current="page">New</a></li>
+          <li class="is-active"><a href="#" aria-current="page">New From Template</a></li>
         </ul>
       </nav>
 
@@ -32,9 +32,12 @@
               </span>
             </div>
             <div v-else>
-              <div v-if="model">
+              <div v-if="template">
+                <div>{{template.name}}</div>
+                <string-field :label="'Template Name'" :value="template.name" :readonly="true" />
+                <textarea-field :label="'Template Description'" :value="template.description" :readonly="true" />
 
-                <workflow-config-model :model="model" :isNew="true" @model-updated="onModelUpdated"  />
+                <workflow-config-model :model="template.workflowConfig" :isNew="true" @model-updated="onModelUpdated"  />
 
                 <div class="field is-grouped mt-5">
                   <div class="control">
@@ -47,6 +50,7 @@
                   {{error}}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -57,11 +61,15 @@
 
 <script>
 import WorkflowConfigModel from '@/components/workflow/WorkflowConfigModel'
+import StringField from '@/components/form/StringField'
+import TextareaField from '@/components/form/TextareaField'
 
 export default {
-  name: 'NewWorkflowConfig',
+  name: 'NewWorkflowConfigFromTemplate',
   components: {
-    WorkflowConfigModel
+    WorkflowConfigModel,
+    StringField,
+    TextareaField
   },
   data () {
     return {
@@ -70,6 +78,7 @@ export default {
       model: null,
       newModel: null,
       creating: false,
+      template: null,
     }
   },
   computed: {
@@ -82,8 +91,8 @@ export default {
     email () {
       return this.$store.state.user.email
     },
-    copyFrom () {
-      return this.$route.params.copyFrom
+    templateId () {
+      return this.$route.params.templateId
     },
     
     orgId () {
@@ -111,7 +120,7 @@ export default {
       return this.orgUser.role == 'Owner' || this.orgUser.role == 'Admin'
     },
     canCreate () {
-      if (!this.newModel) {
+      if (!this.newModel || !this.newModel.tableName) {
         return false
       }
       if (!this.newModel.tableName.slice(this.orgId.length + 1)) {
@@ -125,20 +134,9 @@ export default {
     orgWorkflowConfigs () {
       return this.$store.state.org.orgWorkflowConfigs
     },
-    copyFromConfig () {
-      if (!this.orgWorkflowConfigs) {
-        return null
-      }
-      for(const workflowConfig of this.orgWorkflowConfigs) {
-        if (workflowConfig.id == this.copyFrom) {
-          return workflowConfig
-        }
-      }
-      return null
-    },
   },
   watch: {
-    copyFromConfig: function (val) {
+    templateId: function (val) {
       if (val) {
         this.model = val
       }
@@ -163,28 +161,19 @@ export default {
         this.creating = false
       })
     },
+    getTemplate () {
+      this.waiting = true
+      this.$http.get(this.server + '/template/get-template/' + this.templateId + '/').then(resp => {
+        this.template = resp.body
+        this.waiting = false
+      }, err => {
+        this.error = err
+        this.waiting = false
+      })
+    },
   },
   mounted () {
-    if (this.copyFrom == 'new') {
-      this.model = {
-        tableName: this.orgId + '-',
-        name: '',
-        description: '',
-        userGroup: 'All',
-        adminGroup: 'All',
-        fields: [],
-        states: [
-          {
-            name: 'Created',
-            color: '#1A237E',
-            permissions: [],
-            transitions: []
-          }
-        ],
-        creationNotifyingGroups: [],
-        creationNotifyingOthers: []
-      }
-    }
+    this.getTemplate()
   },
 }
 </script>

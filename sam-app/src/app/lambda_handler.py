@@ -5,6 +5,7 @@ from .controllers import org_controller
 from .controllers import workflow_controller
 from .controllers import folder_controller
 from .controllers import s3_controller
+from .controllers import template_controller
 
 
 class MyRouter:
@@ -91,6 +92,8 @@ def handle(event, context):
             ('POST', '/org/check-org-id', False, org_controller.check_org_id),
             ('POST', '/org/create-org', True, org_controller.create_org),
             ('POST', '/org/create-role-for-platform-hosted-org', True, org_controller.create_role_for_platform_hosted_org),
+            ('GET', '/template/get-all-templates', True, template_controller.get_all_templates),
+            ('GET', '/template/get-template/:id', True, template_controller.get_template),
         ])
         return router.route(req)
     except MyError as err:
