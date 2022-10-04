@@ -624,7 +624,7 @@ export default {
         workflowId: workflow.id,
         workflowConfigId: this.orgWorkflowConfig.id,
         receivers: emails,
-        additionalMessage: 'The workflow has transferred to ' + workflow.state,
+        additionalMessage: 'The workflow has transitioned to ' + workflow.state,
         workflowLink: window.location.origin + '/org/' + this.orgId + '/workflow/' + this.orgWorkflowConfig.id + '/' + workflow.id,
       }
       this.$http.post(this.server + '/org/send-email-about-workflow', message)
@@ -647,7 +647,7 @@ export default {
       if (transition.transitionNotifyingOthers && transition.transitionNotifyingOthers.length) {
         for (const o of transition.transitionNotifyingOthers) {
           if (o == 'Workflow Creator') {
-            emails.push(this.email)
+            emails.push(workflow.createdBy)
           } else if(this.isValidateEmail(workflow[o])) {
             emails.push(workflow[o])
           }

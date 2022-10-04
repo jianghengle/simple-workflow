@@ -19,7 +19,8 @@
             <span class="icon">
               <i class="fas fa-plus"></i>
             </span>
-            <span>New Workflow</span>
+            <span v-if="orgWorkflowConfig && orgWorkflowConfig.creationButton">{{orgWorkflowConfig.creationButton}}</span>
+            <span v-else>New Workflow</span>
           </router-link>
         </div>
         <h1 class="title is-4">

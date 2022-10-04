@@ -11,12 +11,14 @@
 
     <string-field :name="'name'" :label="'Name'" :value="localModel.name" :placeholder="'Workflow name'" @value-changed="onValueChanged" />
 
-    <!--<textarea-field :name="'description'" :label="'Description'" :value="localModel.description" :placeholder="'Workflow description'" @value-changed="onValueChanged" />-->
+    <textarea-field :name="'description'" :label="'Description'" :value="localModel.description" :placeholder="'Workflow description'" @value-changed="onValueChanged" />
 
     <string-field :name="'userGroup'" :label="'User Group'" :value="localModel.userGroup" @value-changed="onValueChanged" :options="groupOptions" :helpInfo="'The user group can see and create workflows.'" />
     <string-field :name="'adminGroup'" :label="'Admin Group'" :value="localModel.adminGroup" @value-changed="onValueChanged" :options="groupOptions" :helpInfo="'The user group can see and move workflows between folders.'" />
 
     <custom-fields :model="localModel.fields" @model-changed="onValueChanged" />
+
+    <string-field :name="'creationButton'" :label="'Creation Button'" :value="localModel.creationButton" :placeholder="'Creation Button Text'" @value-changed="onValueChanged" />
 
     <strings-field :name="'creationNotifyingGroups'" :label="'Creation Notifying Groups'" :value="localModel.creationNotifyingGroups" @value-changed="onValueChanged" :options="groupOptions" />
     <strings-field :name="'creationNotifyingOthers'" :label="'Creation Notifying Others'" :value="localModel.creationNotifyingOthers" @value-changed="onValueChanged" :options="otherOptions" />
@@ -94,7 +96,7 @@ export default {
     setLocalModel () {
       var model = JSON.parse(JSON.stringify(this.model))
       var localModel = {}
-      var attrs = ['tableName', 'name', 'description', 'userGroup', 'adminGroup', 'fields', 'states', 'creationNotifyingGroups', 'creationNotifyingOthers']
+      var attrs = ['tableName', 'name', 'description', 'userGroup', 'adminGroup', 'fields', 'states', 'creationButton', 'creationNotifyingGroups', 'creationNotifyingOthers']
       for(const attr of attrs) {
         localModel[attr] = model[attr]
       }

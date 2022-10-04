@@ -105,6 +105,7 @@ export default {
     },
     onItemFieldModalDeleted () {
       this.localModel.splice(this.itemFieldModal.index, 1)
+      this.itemFieldModal.opened = false
     },
   },
   mounted () {

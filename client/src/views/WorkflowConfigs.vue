@@ -77,20 +77,31 @@
           </div>
 
           <div class="pt-2">
-            <div class="box is-clickable" v-for="(w, i) in availableConfigs" :key="'w-c-' + i" @click="viewWorkflows(w)">
+            <div class="box" v-for="(w, i) in availableConfigs" :key="'w-c-' + i">
               <article class="media">
                 <div class="media-content">
                   <div class="content">
                     <p>
                       <strong>{{w.name}}</strong> &nbsp;
-                      <span class="icon is-small has-text-link" v-if="isAdmin" @click.stop="editWorkflowConfig(w)">
+                      <a class="icon is-small has-text-link" v-if="isAdmin" @click="editWorkflowConfig(w)">
                         <i class="fas fa-edit" aria-hidden="true"></i>
-                      </span>
+                      </a>
                       <br>
                       <span>
                         {{w.description}}
                       </span>
                     </p>
+                    <div class="buttons">
+                      <button class="button" @click="viewWorkflows(w)">View All</button>
+                      <button class="button" @click="createWorkflow(w)">
+                        <span v-if="w.creationButton">
+                          {{w.creationButton}}
+                        </span>
+                        <span v-else>
+                          New Workflow
+                        </span>
+                      </button>
+                    </div>
                   </div>
                   
                 </div>
@@ -185,7 +196,10 @@ export default {
   },
   methods: {
     viewWorkflows (w) {
-      this.$router.push('/org/' + this.orgId + '/workflow-folder/' + w.id + '/' +w.id)
+      this.$router.push('/org/' + this.orgId + '/workflow-folder/' + w.id + '/' + w.id)
+    },
+    createWorkflow (w) {
+      this.$router.push('/org/' + this.orgId + '/new-workflow/' + w.id + '/' + w.id + '/new')
     },
     editWorkflowConfig (wc) {
       this.$router.push('/org/' + this.orgId + '/workflow-config/' + wc.id)
