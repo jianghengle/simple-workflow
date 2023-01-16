@@ -1,7 +1,10 @@
 <template>
   <div class="mt-4">
     <div class="field">
-      <label class="label">{{label}}</label>
+      <label class="label">
+        <span>{{label}}</span>&nbsp;
+        <span class="has-text-danger has-text-weight-light is-size-7" v-if="required">Required</span>
+      </label>
 
       <div class="control">
         <table class="table table is-fullwidth table is-hoverable">
@@ -61,7 +64,7 @@ export default {
   components: {
     ItemsItemModal
   },
-  props: ['name', 'label', 'value', 'fields', 'readonly', 'parentModel', 'helpInfo'],
+  props: ['name', 'label', 'required', 'value', 'fields', 'readonly', 'parentModel', 'helpInfo'],
   data () {
     return {
       localValue: [],

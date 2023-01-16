@@ -55,6 +55,8 @@
 
         <checkbox-field v-if="model.type == 'number'"  :name="'twoDigits'" :label="'Number in table'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
 
+        <checkbox-field :name="'required'" :label="'Required'" :inlineLabel="'required'" :value="model.required" @value-changed="onValueChanged" />
+
       </section>
       <footer class="modal-card-foot">
         <a class="button is-link"  :disabled="!canSave" :class="{'my-disabled-button': !canSave}" @click="save">Save</a>
@@ -89,6 +91,7 @@ export default {
         options: null,
         showSum: false,
         twoDigits: true,
+        required: false,
       },
       typeOptions: ['string', 'number'],
       optionsMode: 'NoOptions',
@@ -154,6 +157,7 @@ export default {
         }
         this.model.showSum = this.field.showSum
         this.model.twoDigits = this.field.twoDigits
+        this.model.required = this.field.required
       }
     },
   },

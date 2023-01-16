@@ -1,7 +1,10 @@
 <template>
   <div class="mt-4">
     <div class="field">
-      <label class="label">{{label}}</label>
+      <label class="label">
+        <span>{{label}}</span>&nbsp;
+        <span class="has-text-danger has-text-weight-light is-size-7" v-if="required">Required</span>
+      </label>
       <div class="field">
         <div class="control" v-if="!options">
           <input class="input" :class="{'my-disbaled-field': readonly}" type="number" :placeholder="placeholder" v-model.number="localValue" :readonly="readonly" :disabled="readonly">
@@ -24,7 +27,7 @@
 <script>
 export default {
   name: 'number-field',
-  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'options', 'helpInfo'],
+  props: ['name', 'label', 'required', 'value', 'placeholder', 'readonly', 'options', 'helpInfo'],
   data () {
     return {
       localValue: null,

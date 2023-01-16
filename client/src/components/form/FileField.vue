@@ -1,7 +1,10 @@
 <template>
   <div class="mt-4">
     <div class="field">
-      <label class="label">{{label}}</label>
+      <label class="label">
+        <span>{{label}}</span>&nbsp;
+        <span class="has-text-danger has-text-weight-light is-size-7" v-if="required">Required</span>
+      </label>
       <file-display v-if="localValue" :fileValue="localValue" :readonly="readonly" @file-deleted="onFileDeleted" />
       <file-upload v-if="!readonly" @file-uploaded="onFileUploaded" />
     </div>
@@ -18,7 +21,7 @@ export default {
     FileUpload,
     FileDisplay
   },
-  props: ['name', 'label', 'value', 'readonly'],
+  props: ['name', 'label', 'required', 'value', 'readonly'],
   data () {
     return {
       localValue: null,

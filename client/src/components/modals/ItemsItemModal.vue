@@ -10,14 +10,14 @@
       <section class="modal-card-body" v-if="localModel">
 
         <div v-for="(f, i) in itemFields" :key="'items-item-modal-'+i">
-          <string-field v-if="f.type=='string'" :name="f.name" :label="f.label" :value="localModel[f.name]" @value-changed="onValueChanged" :options="f.optionValues" />
-          <number-field v-if="f.type=='number'" :name="f.name" :label="f.label" :value="localModel[f.name]" @value-changed="onValueChanged" />
-          <strings-field v-if="f.type=='strings'" :name="f.name" :label="f.label" :value="localModel[f.name]" @value-changed="onValueChanged" :options="f.optionValues" />
+          <string-field v-if="f.type=='string'" :name="f.name" :label="f.label" :value="localModel[f.name]" @value-changed="onValueChanged" :options="f.optionValues" :required="f.required" />
+          <number-field v-if="f.type=='number'" :name="f.name" :label="f.label" :value="localModel[f.name]" @value-changed="onValueChanged" :required="f.required" />
+          <strings-field v-if="f.type=='strings'" :name="f.name" :label="f.label" :value="localModel[f.name]" @value-changed="onValueChanged" :options="f.optionValues" :required="f.required" />
         </div>
 
       </section>
       <footer class="modal-card-foot">
-        <a class="button is-link" @click="save">Save</a>
+        <a class="button is-link" :disabled="!requiredFieldsReady" @click="save">Save</a>
         <a class="button is-danger" @click="removeItem" v-if="index != null">Delete</a>
         <a class="button" @click="close">Cancel</a>
       </footer>
@@ -88,6 +88,17 @@ export default {
       }
       return itemFields
     },
+    requiredFieldsReady () {
+      if (!this.localModel || !this.itemFields) {
+        return false
+      }
+      for(const field of this.itemFields) {
+        if (field.required && !this.localModel[field.name] && this.localModel[field.name] !== 0) {
+          return false
+        }
+      }
+      return true
+    },
   },
   watch: {
     opened: function (val) {
@@ -101,6 +112,9 @@ export default {
       this.$emit('items-item-modal-closed')
     },
     save () {
+      if (!this.requiredFieldsReady) {
+        return
+      }
       this.$emit('items-item-modal-saved', this.localModel)
     },
     removeItem () {
@@ -109,7 +123,7 @@ export default {
     onValueChanged (val) {
       var name = val[0]
       var value = val[1]
-      if (this.model[name] != value) {
+      if (this.localModel[name] != value) {
         this.localModel[name] = value
       }
     },

@@ -1,7 +1,10 @@
 <template>
   <div class="mt-4">
     <div class="field">
-      <label class="label">{{label}}</label>
+      <label class="label">
+        <span>{{label}}</span>&nbsp;
+        <span class="has-text-danger has-text-weight-light is-size-7" v-if="required">Required</span>
+      </label>
       <div class="field" :class="{'has-addons': prefix}">
         <p class="control" v-if="prefix">
           <a class="button is-static">
@@ -30,7 +33,7 @@
 <script>
 export default {
   name: 'string-field',
-  props: ['name', 'label', 'value', 'placeholder', 'prefix', 'readonly', 'options', 'constraints', 'helpInfo'],
+  props: ['name', 'label', 'required', 'value', 'placeholder', 'prefix', 'readonly', 'options', 'constraints', 'helpInfo'],
   data () {
     return {
       localValue: null,
@@ -38,14 +41,19 @@ export default {
   },
   computed: {
     selectOptions () {
+      var emptyOption = {value: '', label: ''}
       if (!this.options || !this.options.length) {
-        return []
+        return [emptyOption]
       }
       var first = this.options[0]
       if (typeof first === 'object') {
-        return this.options
+        var options = this.options.slice()
+        options.unshift(emptyOption)
+        return options
       }
-      return this.options.map(opt => ({value: opt, label: opt}))
+      var options = this.options.map(opt => ({value: opt, label: opt}))
+      options.unshift(emptyOption)
+      return options
     },
     brokenConstraint () {
       if (this.localValue == null) {

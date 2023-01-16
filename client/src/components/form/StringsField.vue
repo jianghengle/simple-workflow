@@ -1,7 +1,10 @@
 <template>
   <div class="mt-4">
     <div class="field">
-      <label class="label">{{label}}</label>
+      <label class="label">
+        <span>{{label}}</span>&nbsp;
+        <span class="has-text-danger has-text-weight-light is-size-7" v-if="required">Required</span>
+      </label>
 
       <div v-if="localValue">
         <div class="control mb-1" v-for="(g, i) in localValue" :key="'strings-field-element-' + i">
@@ -52,7 +55,7 @@
 <script>
 export default {
   name: 'strings-field',
-  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'options', 'helpInfo'],
+  props: ['name', 'label', 'required', 'value', 'placeholder', 'readonly', 'options', 'helpInfo'],
   data () {
     return {
       localValue: null,

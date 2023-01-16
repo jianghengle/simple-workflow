@@ -1,15 +1,15 @@
 <template>
   <div v-if="localModel" class="mb-6">
     <div v-for="(f, i) in fields" :key="'wfm-f-'+i">
-      <string-field v-if="f.type == 'string'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly" @value-changed="onValueChanged" :options="f.optionValues" />
-      <strings-field v-if="f.type == 'strings'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly" @value-changed="onValueChanged" :options="f.optionValues" />
-      <textarea-field v-if="f.type == 'textarea'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
-      <number-field v-if="f.type == 'number'" v-show="!f.linkedFrom" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
-      <checkbox-field v-if="f.type == 'checkbox'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
-      <file-field v-if="f.type == 'file'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
-      <files-field v-if="f.type == 'files'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
-      <sheet-field v-if="f.type == 'sheet'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly" :columns="f.columns"  @value-changed="onValueChanged" />
-      <items-field v-if="f.type == 'items'" :name="f.name" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly" :fields="f.itemFields" :parentModel="localModel"  @value-changed="onValueChanged" />
+      <string-field v-if="f.type == 'string'" :name="f.name" :label="f.label" :required="f.required" :value="localModel[f.name]" :readonly="f.readonly" @value-changed="onValueChanged" :options="f.optionValues" />
+      <strings-field v-if="f.type == 'strings'" :name="f.name" :label="f.label" :required="f.required" :value="localModel[f.name]" :readonly="f.readonly" @value-changed="onValueChanged" :options="f.optionValues" />
+      <textarea-field v-if="f.type == 'textarea'" :name="f.name" :label="f.label" :required="f.required" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
+      <number-field v-if="f.type == 'number'" v-show="!f.linkedFrom" :name="f.name" :required="f.required" :label="f.label" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
+      <checkbox-field v-if="f.type == 'checkbox'" :name="f.name" :label="f.label" :required="f.required" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
+      <file-field v-if="f.type == 'file'" :name="f.name" :label="f.label" :required="f.required" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
+      <files-field v-if="f.type == 'files'" :name="f.name" :label="f.label" :required="f.required" :value="localModel[f.name]" :readonly="f.readonly"  @value-changed="onValueChanged" />
+      <sheet-field v-if="f.type == 'sheet'" :name="f.name" :label="f.label" :required="f.required" :value="localModel[f.name]" :readonly="f.readonly" :columns="f.columns"  @value-changed="onValueChanged" />
+      <items-field v-if="f.type == 'items'" :name="f.name" :label="f.label" :required="f.required" :value="localModel[f.name]" :readonly="f.readonly" :fields="f.itemFields" :parentModel="localModel"  @value-changed="onValueChanged" />
     </div>
 
   </div>

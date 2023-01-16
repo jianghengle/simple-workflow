@@ -167,7 +167,7 @@
         <div v-else>
           <article class="message is-info">
             <div class="message-body">
-              No workflows found.
+              Nothing found.
             </div>
           </article>
         </div>

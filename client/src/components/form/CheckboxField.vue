@@ -1,7 +1,10 @@
 <template>
   <div class="mt-4">
     <div class="field">
-      <label class="label">{{label}}</label>
+      <label class="label">
+        <span>{{label}}</span>&nbsp;
+        <span class="has-text-danger has-text-weight-light is-size-7" v-if="required">Required</span>
+      </label>
       <div class="control">
         <label class="checkbox" :disabled="readonly">
           <input type="checkbox" v-model="localValue" :disabled="readonly">
@@ -16,7 +19,7 @@
 <script>
 export default {
   name: 'checkbox-field',
-  props: ['name', 'label', 'value', 'inlineLabel', 'readonly', 'helpInfo'],
+  props: ['name', 'label', 'required', 'value', 'inlineLabel', 'readonly', 'helpInfo'],
   data () {
     return {
       localValue: null,

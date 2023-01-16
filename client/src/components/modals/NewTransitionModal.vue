@@ -88,6 +88,9 @@ export default {
       var fieldNames = this.fields.filter(f => f.type == 'number').map(f => f.name)
       return fieldNames
     },
+    allFields () {
+      return this.fields.map(f => f.name)
+    },
     permissionFields () {
       return [
         {name: 'groups', label: 'Groups', type: 'strings', optionValues: this.groupOptions},
@@ -95,6 +98,7 @@ export default {
         {name: 'conditionField', label: 'Condition Field', type: 'string', optionValues: this.numberFields},
         {name: 'conditionOperator', label: 'Condition Operator', type: 'string', options: ['<', '<=', '==', '>=', '>']},
         {name: 'conditionOperand', label: 'Condition Operand', type: 'number'},
+        {name: 'requiredFields', label: 'Required Fields', type: 'strings', optionValues: this.allFields},
       ]
     },
   },

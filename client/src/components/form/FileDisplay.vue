@@ -14,17 +14,28 @@
         <button v-if="!readonly" class="delete mt-1 is-pulled-right" @click="deleteFile"></button>
         <a class="my-file-name" :href="url" :download="fileValue.filename">{{fileValue.filename}}</a>
       </div>
-      <div v-if="!isImage && iframeSource">
+      <div v-if="!isImage && !isHeic && iframeSource">
         <iframe class="my-doc" :src="iframeSource"></iframe>
       </div>
       <div v-if="isImage" class="my-image-container">
         <img class="my-image" :src="url" />
+      </div>
+      <div v-if="isHeic" class="my-image-container">
+        <div v-if="waitingHeic">
+          <span class="icon is-medium is-size-4">
+            <i class="fas fa-spinner fa-pulse"></i>
+          </span>
+        </div>
+        <div v-else>
+          <img class="my-image" :src="heicSource" />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import heicConvert from 'heic-convert'
 
 export default {
   name: 'file-display',
@@ -34,6 +45,8 @@ export default {
       url: null,
       waiting: false,
       error: '',
+      waitingHeic: false,
+      heicSource: null,
     }
   },
   computed: {
@@ -51,6 +64,17 @@ export default {
       }
       return false
     },
+    isHeic () {
+      if (!this.fileValue) {
+        return false
+      }
+      var ss = this.fileValue.filename.split('.')
+      var ext = ss[ss.length - 1].toLowerCase()
+      if (['heic', 'heif'].includes(ext)) {
+        return true
+      }
+      return false
+    },
     iframeSource () {
       if (this.url) {
         var encodedUrl = encodeURIComponent(this.url);
@@ -63,6 +87,11 @@ export default {
       this.url = null
       if (val) {
         this.getS3DownloadUrl()
+      }
+    },
+    url: function (val) {
+      if (val && this.isHeic) {
+        this.convertToHeic()
       }
     },
   },
@@ -92,6 +121,25 @@ export default {
     },
     deleteFileConfirmed () {
       this.$emit('file-deleted', this.fileIndex)
+    },
+    convertToHeic () {
+      var vm = this
+      vm.waitingHeic = true
+      fetch(vm.url)
+        .then((resp) => resp.arrayBuffer())
+        .then((data) => {
+          const buffer = Buffer.from(data)
+          heicConvert({ buffer, format: 'PNG' }).then(function(output){
+            const imgBase64 = btoa(
+              output.reduce((data, byte) => `${data}${String.fromCharCode(byte)}`, '')
+            )
+            vm.heicSource = `data:image/png;base64,${imgBase64}`
+            vm.waitingHeic = false
+          }, function(err) {
+            vm.error = 'Failed to convert heic'
+            vm.waitingHeic = false
+          })
+        })
     },
   },
   mounted () {

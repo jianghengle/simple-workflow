@@ -1,7 +1,10 @@
 <template>
   <div class="mt-4">
     <div class="field">
-      <label class="label">{{label}}</label>
+      <label class="label">
+        <span>{{label}}</span>&nbsp;
+        <span class="has-text-danger has-text-weight-light is-size-7" v-if="required">Required</span>
+      </label>
       <div class="control">
         <table class="table table is-fullwidth table is-hoverable">
           <thead>
@@ -39,7 +42,7 @@ export default {
   components: {
     SheetRowModal
   },
-  props: ['name', 'label', 'value', 'columns', 'readonly', 'helpInfo'],
+  props: ['name', 'label', 'required', 'value', 'columns', 'readonly', 'helpInfo'],
   data () {
     return {
       localValue: [],

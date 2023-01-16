@@ -13,6 +13,7 @@
     "core-js": "^3.6.5",
     "dateformat": "^5.0.2",
     "file-saver": "^2.0.5",
+    "heic-convert": "^1.2.4",
     "vue": "^2.6.11",
     "vue-color": "^2.8.1",
     "vue-resource": "^1.5.3",

@@ -74,7 +74,7 @@
 
                   <div class="field is-grouped">
                     <div class="control" v-if="canSave">
-                      <button class="button is-link" :class="{'is-loading': updating}" @click="updateWorkflow">Save</button>
+                      <button class="button is-link" :disabled="!requiredFieldsReady" :class="{'is-loading': updating}" @click="updateWorkflow">Save</button>
                     </div>
                     <div class="control" v-if="canDelete">
                       <button class="button is-danger" :class="{'is-loading': deleting}" @click="deleteWorkflow">Delete</button>
@@ -89,7 +89,7 @@
 
                   <div class="field is-grouped">
                     <div class="control" v-for="(t, i) in availableTransitions" :key="'at-' + i">
-                      <button class="button is-link" :class="{'is-loading': transiting}" @click="transiteWorkflow(t)" :style="{'background-color': getTransitionColor(t.toState)}">
+                      <button class="button is-link" :disabled="!requiredFieldsReady" :class="{'is-loading': transiting}" @click="transiteWorkflow(t)" :style="{'background-color': getTransitionColor(t.toState)}">
                         {{t.actionLabel}}
                       </button>
                     </div>
@@ -383,7 +383,7 @@ export default {
           continue
         }
         for (const p of t.permissions) {
-          if (this.userIsActor(p) && this.isConditionSatisfied(p)) {
+          if (this.userIsActor(p) && this.isConditionSatisfied(p) && this.areRequiredFieldsFilled(p)) {
             canTransite = true
             break
           }
@@ -393,6 +393,17 @@ export default {
         }        
       }
       return transitions
+    },
+    requiredFieldsReady () {
+      if (!this.newModel || !this.orgWorkflowConfig) {
+        return false
+      }
+      for(const field of this.orgWorkflowConfig.fields) {
+        if (field.required && !this.newModel[field.name] && this.newModel[field.name] !== 0) {
+          return false
+        }
+      }
+      return true
     },
   },
   watch: {
@@ -440,7 +451,7 @@ export default {
       this.newModel = val
     },
     updateWorkflow () {
-      if (this.updating) {
+      if (!this.requiredFieldsReady || this.updating) {
         return
       }
 
@@ -588,7 +599,35 @@ export default {
       }
       return false
     },
+    areRequiredFieldsFilled (p) {
+      if (!p.requiredFields || !p.requiredFields.length) {
+        return true
+      }
+      if (!this.newModel) {
+        return false
+      }
+      for (const f of this.orgWorkflowConfig.fields) {
+        if (p.requiredFields.includes(f.name)) {
+          var value = this.newModel[f.name]
+          if (f.type == 'number') {
+            if (value == undefined || value == null || value == '') {
+              return false
+            }
+          } else if (f.type == 'items') {
+            if (!value || !value.length) {
+              return false
+            }
+          } else if (!value) {
+            return false
+          }
+        }
+      }
+      return true
+    },
     transiteWorkflow (transition) {
+      if (!this.requiredFieldsReady) {
+        return
+      }
       var confirm = {
         title: 'Transite Workflow',
         message: 'Are you sure to transite the state to "' + transition.toState + '"?',

@@ -1,7 +1,10 @@
 <template>
   <div class="mt-4">
     <div class="field">
-      <label class="label">{{label}}</label>
+      <label class="label">
+        <span>{{label}}</span>&nbsp;
+        <span class="has-text-danger has-text-weight-light is-size-7" v-if="required">Required</span>
+      </label>
       <div class="control">
         <textarea class="textarea" :class="{'my-disbaled-field': readonly}" :placeholder="placeholder" v-model="localValue" :readonly="readonly" :disabled="readonly"></textarea>
       </div>
@@ -13,7 +16,7 @@
 <script>
 export default {
   name: 'textarea-field',
-  props: ['name', 'label', 'value', 'placeholder', 'readonly', 'helpInfo'],
+  props: ['name', 'label', 'required', 'value', 'placeholder', 'readonly', 'helpInfo'],
   data () {
     return {
       localValue: null,

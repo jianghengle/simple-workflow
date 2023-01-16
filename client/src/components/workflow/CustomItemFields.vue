@@ -17,6 +17,7 @@
           <th>Name</th>
           <th>Label</th>
           <th>Type</th>
+          <th>Required</th>
         </tr>
       </thead>
       <tbody>
@@ -25,6 +26,7 @@
           <td>{{f.name}}</td>
           <td>{{f.label}}</td>
           <td>{{f.type}}</td>
+          <td>{{f.required}}</td>
         </tr>
       </tbody>
     </table>

@@ -40,7 +40,7 @@
 
                 <div class="field is-grouped mt-5">
                   <div class="control">
-                    <button class="button is-link" :class="{'is-loading': creating}" @click="createWorkflow">Create</button>
+                    <button class="button is-link" :disabled="!requiredFieldsReady" :class="{'is-loading': creating}" @click="createWorkflow">Create</button>
                   </div>
                 </div>
 
@@ -152,6 +152,17 @@ export default {
       }
       return false
     },
+    requiredFieldsReady () {
+      if (!this.newModel || !this.orgWorkflowConfig) {
+        return false
+      }
+      for(const field of this.orgWorkflowConfig.fields) {
+        if (field.required && !this.newModel[field.name] && this.newModel[field.name] !== 0) {
+          return false
+        }
+      }
+      return true
+    },
   },
   watch: {
     orgWorkflowConfig: function (val) {
@@ -193,7 +204,7 @@ export default {
       this.newModel = val
     },
     createWorkflow () {
-      if (this.creating) {
+      if (!this.requiredFieldsReady || this.creating) {
         return
       }
 

@@ -78,6 +78,8 @@
 
         <checkbox-field v-if="(model.dashboard > 0 && model.type == 'number')"  :name="'twoDigits'" :label="'Number in Dashboard'" :inlineLabel="'Show two digits'" :value="model.twoDigits" @value-changed="onValueChanged" />
 
+        <checkbox-field :name="'required'" :label="'Required for Saving'" :inlineLabel="'required'" :value="model.required" @value-changed="onValueChanged" />
+
       </section>
       <footer class="modal-card-foot">
         <a class="button is-link"  :disabled="!canSave" :class="{'my-disabled-button': !canSave}" @click="save">Save</a>
@@ -123,6 +125,7 @@ export default {
         dashboard: 0,
         twoDigits: true,
         defaultValue: null,
+        required: false,
       },
       typeOptions: ['string', 'textarea', 'number', 'checkbox', 'file', 'files', 'items'],
       optionsMode: 'NoOptions',
@@ -196,6 +199,7 @@ export default {
         this.model.linkedFrom = this.field.linkedFrom
         this.model.linkedValues = this.field.linkedValues ? JSON.parse(JSON.stringify(this.field.linkedValues)) : []
         this.model.defaultValue = this.field.defaultValue
+        this.model.required = this.field.required
       }
     },
   },
